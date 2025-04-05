@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergun Kodesh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Mulish:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Mulish', sans-serif;
+            color: #2B2A29;
+            line-height: 1.5;
+            padding: 40px;
+            background-color: #FFFFFF;
+        }
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #2C3E50;
+            font-size: 32px;
+        }
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            color: #2C3E50;
+            font-size: 24px;
+        }
+        h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 400;
+            color: #57687A;
+            font-size: 18px;
+        }
+        a {
+            color: #C7711A;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .address, .contact {
+            margin-top: 20px;
+        }
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ergun Kodesh</h1>
+    <h2>Welcome to Our Community Space</h2>
+    <p>Ergun Kodesh, meaning "Holy Organization," serves as the steward of our shared space, bringing together diverse faith communities under one roof in Menomonee Falls, Wisconsin. We provide a welcoming and sacred environment dedicated to spiritual growth, community engagement, and harmonious cooperation.</p>
+
+
+<h2>Our Mission</h2>
+<p>To foster a supportive and sacred community space where faith-based congregations can gather, worship, learn, and engage with our broader neighborhood.</p>
+
+<h2>Who We Are</h2>
+<p>Established as a unifying entity, Ergun Kodesh manages the facility located at N84W16971 Menomonee Ave, home to:</p>
+<ul>
+    <li><strong>Anchor Falls Church</strong> – Founded in 1981, Anchor Falls is a cross-generational, interdenominational, Bible-believing congregation passionate about connecting people with God's love. <a href="http://anchorfalls.org">Learn more →</a></li>
+    <li><strong>Beth Messiah</strong> – A Messianic Jewish Congregation established in 2006, Beth Messiah blends rich Jewish traditions with faith in Messiah Yeshua, fostering unity among Jews and Gentiles. <a href="http://bethmessiah.us">Discover more →</a></li>
+</ul>
+
+<h2>Facilities</h2>
+<p>Our building, established in 1969, features facilities designed to support community and spiritual life:</p>
+<ul>
+    <li>Sanctuary</li>
+    <li>Classrooms</li>
+    <li>Fellowship Hall</li>
+    <li>Office Spaces</li>
+    <li>Parking Area</li>
+</ul>
+
+<div class="address">
+    <h2>Connect with Us</h2>
+    <p><strong>Ergun Kodesh</strong><br>
+    N84W16971 Menomonee Ave<br>
+    Menomonee Falls, WI 53051<br>
+    <a href="https://www.google.com/maps/place/N84W16971+Menomonee+Ave,+Menomonee+Falls,+WI+53051">Get Directions</a></p>
+</div>
+
+<div class="contact">
+    <h3>Contact Information</h3>
+    <p>If you have any questions or need further information, please reach out through our affiliated congregations:</p>
+    <ul>
+        <li><strong>Anchor Falls Church:</strong> <a href="mailto:info@anchorfalls.org">info@anchorfalls.org</a>, (414) 464-9220</li>
+        <li><strong>Beth Messiah:</strong> <a href="mailto:info@bethmessiah.us">info@bethmessiah.us</a>, (414) 395-3043</li>
+    </ul>
+</div>
+
+</body>
+</html>
