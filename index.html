@@ -54,24 +54,30 @@
             color: #6AB5FF;
             text-decoration: underline;
         }
-        ul {
-            padding-left: 25px;
-            margin-top: 15px;
+        .community {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9fafc;
+            border: 1px solid #e0e6ed;
+            border-radius: 10px;
         }
-        .address, .contact {
+        .community img {
+            max-width: 100px;
+            height: auto;
+            flex-shrink: 0;
+        }
+        .info {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .address {
             background-color: #f4f8fb;
             padding: 20px;
             border-radius: 10px;
             margin-top: 30px;
-        }
-        .community {
-            margin-bottom: 30px;
-        }
-        .community img {
-            max-width: 160px;
-            height: auto;
-            display: block;
-            margin: 10px 0;
         }
         @media (max-width: 600px) {
             .container {
@@ -82,6 +88,13 @@
             }
             h2 {
                 font-size: 24px;
+            }
+            .community {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .community img {
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -99,25 +112,25 @@
         <p>Check out one of our partner communities today!</p>
 
         <div class="community">
-            <strong>Anchor Falls Church</strong>
             <a href="http://anchorfalls.org" target="_blank">
                 <img src="logo_AnchorFallsChurch.png" alt="Anchor Falls Church Logo">
             </a>
-            <ul>
-                <li>Website: <a href="http://anchorfalls.org">anchorfalls.org</a></li>
-                <li>Phone: (414) 464-9220</li>
-            </ul>
+            <div class="info">
+                <strong>Anchor Falls Church</strong><br>
+                Website: <a href="http://anchorfalls.org">anchorfalls.org</a><br>
+                Phone: (414) 464-9220
+            </div>
         </div>
 
         <div class="community">
-            <strong>Beth Messiah</strong>
             <a href="http://bethmessiah.us" target="_blank">
                 <img src="logo_BethMessiah.png" alt="Beth Messiah Logo">
             </a>
-            <ul>
-                <li>Website: <a href="http://bethmessiah.us">bethmessiah.us</a></li>
-                <li>Phone: (414) 395-3043</li>
-            </ul>
+            <div class="info">
+                <strong>Beth Messiah</strong><br>
+                Website: <a href="http://bethmessiah.us">bethmessiah.us</a><br>
+                Phone: (414) 395-3043
+            </div>
         </div>
 
         <div class="address">
