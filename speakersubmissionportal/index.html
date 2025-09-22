@@ -29,9 +29,9 @@
     <div id="password-screen" class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
             <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Submission Portal</h1>
-            <p class="text-center text-gray-500 mb-6">Please enter the password to continue.</p> 
+            <p class="text-center text-gray-500 mb-6">Please enter the password to continue.</p>
             <form id="password-form">
-                <input type="password" id="password-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password">
+                <input type="password" id="password-input" name="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password">
                 <p id="password-error" class="text-red-500 text-sm mt-2 hidden">Incorrect password. Please try again.</p>
                 <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-blue-700 transition-colors">Enter</button>
             </form>
@@ -106,15 +106,19 @@
         const passwordScreen = document.getElementById('password-screen');
         const mainContent = document.getElementById('main-content');
         const passwordForm = document.getElementById('password-form');
+        const passwordInput = document.getElementById('password-input'); // This line correctly gets the input element
         
         passwordForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (passwordForm.password.value === pagePassword) {
+            // --- FIX ---
+            // Use the 'passwordInput' variable we defined above, instead of 'passwordForm.password'
+            if (passwordInput.value === pagePassword) {
                 passwordScreen.classList.add('hidden');
                 mainContent.classList.remove('hidden');
             } else {
                 document.getElementById('password-error').classList.remove('hidden');
-                passwordForm.password.classList.add('border-red-500');
+                // Also use 'passwordInput' here
+                passwordInput.classList.add('border-red-500');
             }
         });
 
@@ -144,10 +148,9 @@
             const serviceDate = new Date(now);
             serviceDate.setDate(now.getDate() + daysToAdd);
             
-            // This method avoids UTC conversion errors by building the string from local date parts.
             const year = serviceDate.getFullYear();
-            const month = String(serviceDate.getMonth() + 1).padStart(2, '0'); // Pad month to 2 digits
-            const day = String(serviceDate.getDate()).padStart(2, '0'); // Pad day to 2 digits
+            const month = String(serviceDate.getMonth() + 1).padStart(2, '0');
+            const day = String(serviceDate.getDate()).padStart(2, '0');
 
             return `${year}-${month}-${day}`;
         };
