@@ -65,7 +65,7 @@
                     console.log(`Sending data to: ${googleScriptUrl}`);
                     const response = await fetch(googleScriptUrl, {
                         method: 'POST',
-                        mode: 'cors', // Important for cross-origin requests
+                        mode: 'no-cors', // Important for cross-origin requests
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
