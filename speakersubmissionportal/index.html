@@ -97,7 +97,6 @@
     </div>
 
     <script>
-        
         // --- CONFIGURATION ---
         const pagePassword = "Autumn2025"; 
         const scriptPassword = "ExcellenceHonorsGod";
@@ -107,17 +106,15 @@
         const passwordScreen = document.getElementById('password-screen');
         const mainContent = document.getElementById('main-content');
         const passwordForm = document.getElementById('password-form');
-        const passwordInput = document.getElementById('password-input');
-        const passwordError = document.getElementById('password-error');
-
+        
         passwordForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (passwordInput.value === pagePassword) {
+            if (passwordForm.password.value === pagePassword) {
                 passwordScreen.classList.add('hidden');
                 mainContent.classList.remove('hidden');
             } else {
-                passwordError.classList.remove('hidden');
-                passwordInput.classList.add('border-red-500');
+                document.getElementById('password-error').classList.remove('hidden');
+                passwordForm.password.classList.add('border-red-500');
             }
         });
 
@@ -127,35 +124,38 @@
         const loadingSpinner = document.getElementById('loading-spinner');
         const serviceDateInput = document.getElementById('serviceDate');
 
-        // --- NEW DATE LOGIC ---
-        // Sets the default service date based on the 10am Sunday cutoff in the user's local timezone.
+        // --- CORRECTED DATE LOGIC ---
         const getNextServiceDate = () => {
             const now = new Date();
-            const dayOfWeek = now.getDay(); // Sunday is 0, Monday is 1, etc.
+            const dayOfWeek = now.getDay(); // Sunday=0
             const hour = now.getHours(); // 0-23
             let daysToAdd = 0;
 
             if (dayOfWeek === 0) { // If it's Sunday
-                if (hour >= 10) { // And at or after 10:00 AM
-                    daysToAdd = 7; // Set to next Sunday
+                if (hour >= 10) { // 10am or later
+                    daysToAdd = 7; // Next Sunday
                 } else {
-                    daysToAdd = 0; // It's still today's service
+                    daysToAdd = 0; // Today
                 }
-            } else { // If it's any other day of the week
-                daysToAdd = 7 - dayOfWeek; // Calculate days until the next Sunday
+            } else { // Any other day
+                daysToAdd = 7 - dayOfWeek;
             }
             
-            const serviceDate = new Date(now.getTime());
+            const serviceDate = new Date(now);
             serviceDate.setDate(now.getDate() + daysToAdd);
             
-            return serviceDate.toISOString().split('T')[0];
+            // This method avoids UTC conversion errors by building the string from local date parts.
+            const year = serviceDate.getFullYear();
+            const month = String(serviceDate.getMonth() + 1).padStart(2, '0'); // Pad month to 2 digits
+            const day = String(serviceDate.getDate()).padStart(2, '0'); // Pad day to 2 digits
+
+            return `${year}-${month}-${day}`;
         };
         serviceDateInput.value = getNextServiceDate();
-        // --- END NEW DATE LOGIC ---
+        // --- END CORRECTED DATE LOGIC ---
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            console.log("Form submission started.");
             
             submitButton.disabled = true;
             submitButton.textContent = 'Submitting...';
@@ -166,31 +166,18 @@
             formData.append('password', scriptPassword);
 
             try {
-                console.log(`Sending data to URL: ${googleScriptUrl}`);
-                const response = await fetch(googleScriptUrl, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                console.log(`Received response from server. Status: ${response.status}`);
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok, status: ${response.status}`);
-                }
-                
+                const response = await fetch(googleScriptUrl, { method: 'POST', body: formData });
                 const result = await response.json();
-                console.log("Parsed JSON result from server:", result);
 
                 if (result.status === 'success') {
                     statusMessage.textContent = result.message;
                     statusMessage.className = 'mt-6 p-4 rounded-lg text-center font-medium bg-green-100 text-green-800';
                     form.reset();
-                    // Reset date to the default after successful submission
                     serviceDateInput.value = getNextServiceDate();
                 } else {
                     throw new Error(result.message || 'An unknown error occurred.');
                 }
             } catch (error) {
-                console.error("An error occurred during the fetch operation:", error);
                 statusMessage.textContent = `Submission failed: ${error.message}`;
                 statusMessage.className = 'mt-6 p-4 rounded-lg text-center font-medium bg-red-100 text-red-800';
             } finally {
