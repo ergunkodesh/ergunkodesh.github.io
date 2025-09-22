@@ -97,11 +97,12 @@
     </div>
 
     <script>
+        
         // --- CONFIGURATION ---
         const pagePassword = "Autumn2025"; 
         const scriptPassword = "ExcellenceHonorsGod";
         const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxzGdtgYsWvezETTGT6vxMNrvF6WitlOVWrcIvjziwJf_SKXbetyaa7N3hJKhQ2-J-xAg/exec";
-        // ---------------------
+        // --------------------
 
         const passwordScreen = document.getElementById('password-screen');
         const mainContent = document.getElementById('main-content');
@@ -126,15 +127,31 @@
         const loadingSpinner = document.getElementById('loading-spinner');
         const serviceDateInput = document.getElementById('serviceDate');
 
-        // Set default service date to the next Sunday
-        const getNextSunday = () => {
-            const today = new Date();
-            const dayOfWeek = today.getDay(); // Sunday - 0, Monday - 1, etc.
-            const daysUntilSunday = 7 - dayOfWeek;
-            const nextSunday = new Date(today.getTime() + daysUntilSunday * 24 * 60 * 60 * 1000);
-            return nextSunday.toISOString().split('T')[0];
+        // --- NEW DATE LOGIC ---
+        // Sets the default service date based on the 10am Sunday cutoff in the user's local timezone.
+        const getNextServiceDate = () => {
+            const now = new Date();
+            const dayOfWeek = now.getDay(); // Sunday is 0, Monday is 1, etc.
+            const hour = now.getHours(); // 0-23
+            let daysToAdd = 0;
+
+            if (dayOfWeek === 0) { // If it's Sunday
+                if (hour >= 10) { // And at or after 10:00 AM
+                    daysToAdd = 7; // Set to next Sunday
+                } else {
+                    daysToAdd = 0; // It's still today's service
+                }
+            } else { // If it's any other day of the week
+                daysToAdd = 7 - dayOfWeek; // Calculate days until the next Sunday
+            }
+            
+            const serviceDate = new Date(now.getTime());
+            serviceDate.setDate(now.getDate() + daysToAdd);
+            
+            return serviceDate.toISOString().split('T')[0];
         };
-        serviceDateInput.value = getNextSunday();
+        serviceDateInput.value = getNextServiceDate();
+        // --- END NEW DATE LOGIC ---
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -167,7 +184,8 @@
                     statusMessage.textContent = result.message;
                     statusMessage.className = 'mt-6 p-4 rounded-lg text-center font-medium bg-green-100 text-green-800';
                     form.reset();
-                    serviceDateInput.value = getNextSunday();
+                    // Reset date to the default after successful submission
+                    serviceDateInput.value = getNextServiceDate();
                 } else {
                     throw new Error(result.message || 'An unknown error occurred.');
                 }
