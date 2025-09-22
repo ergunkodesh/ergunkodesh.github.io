@@ -22,10 +22,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Style for the details/summary accordion */
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
-        details[open] summary .accordion-arrow { transform: rotate(90deg); }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -65,28 +61,24 @@
                 </div>
                 
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                    <details>
-                        <summary class="flex items-center text-xl font-semibold text-gray-800 cursor-pointer">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                            Presentation Guidelines
-                            <span class="ml-auto accordion-arrow transition-transform duration-200">&#9654;</span>
-                        </summary>
-                        <div class="mt-4 text-gray-700 space-y-3">
-                            <p>If using your own template, please apply these settings:</p>
-                            <div class="text-sm">
-                                <p><strong>Slide Format:</strong> Widescreen (16:9)</p>
-                                <p><strong>Background Color:</strong> <code class="bg-gray-200 px-1 rounded">#2B2A29</code></p>
-                                <p><strong>Primary Font:</strong> Mulish Regular, 40pt, White</p>
-                                <p><strong>Spacing:</strong> 0.9 Line Spacing, 10pt Before Paragraph</p>
-                            </div>
+                    <h2 class="flex items-center text-xl font-semibold text-gray-800 mb-4">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        Presentation Guidelines
+                    </h2>
+                    <div class="mt-4 text-gray-700 space-y-3">
+                        <p>If using your own template, please consider these settings as guidelines:</p>
+                        <div class="text-sm">
+                            <p><strong>Slide Format:</strong> Widescreen (16:9)</p>
+                            <p><strong>Background Color:</strong> <code class="bg-gray-200 px-1 rounded">#2B2A29</code></p>
+                            <p><strong>Primary Font:</strong> Mulish Regular, 40pt, White</p>
+                            <p><strong>Spacing:</strong> 0.9 Line Spacing, 10pt Before Paragraph</p>
                         </div>
-                    </details>
+                    </div>
                 </div>
             </div>
 
             <div class="bg-white p-8 rounded-xl shadow-lg">
                 <form id="submission-form" class="space-y-8">
-                    
                     <fieldset>
                         <legend class="text-lg font-semibold text-gray-800 mb-4 border-l-4 border-gray-500 pl-3">Primary Information</legend>
                         <div class="space-y-6">
@@ -147,7 +139,7 @@
 
                 <div id="loading-spinner" class="hidden flex justify-center items-center mt-4">
                     <div class="spinner"></div>
-                    <p class="ml-4 text-gray-600">Submitting, please wait...</p>
+                    <p id="loading-message" class="ml-4 text-gray-600">Submitting, please wait...</p>
                 </div>
                 <div id="status-message" class="mt-6 p-4 rounded-lg text-center font-medium hidden"></div>
             </div>
@@ -174,6 +166,7 @@
         const serviceDateInput = document.getElementById('serviceDate');
         const additionalFilesInput = document.getElementById('additionalFiles');
         const additionalFilesList = document.getElementById('additional-files-list');
+        const loadingMessage = document.getElementById('loading-message'); // New selector for loading message
 
         // --- Password Protection ---
         passwordForm.addEventListener('submit', (e) => {
@@ -190,7 +183,7 @@
         // --- Date Logic ---
         const getNextServiceDate = () => {
             const now = new Date();
-            const dayOfWeek = now.getDay(); // Sunday=0
+            const dayOfWeek = now.getDay();
             const hour = now.getHours();
             let daysToAdd = (dayOfWeek === 0 && hour < 10) ? 0 : (7 - dayOfWeek) % 7;
             if (dayOfWeek === 0 && hour >=10) daysToAdd = 7;
@@ -235,6 +228,32 @@
             });
         };
 
+        // ### CHANGE 2: New logic for dynamic loading messages ###
+        let messageInterval;
+        const loadingMessages = [
+            "Uploading your files...",
+            "Brewing some coffee...",
+            "Converting the presentation...",
+            "Asking the AI for a little help...",
+            "Polishing the pixels...",
+            "Almost there, hang tight!",
+            "Finalizing the details..."
+        ];
+
+        function startLoadingMessages() {
+            loadingMessage.textContent = loadingMessages[0];
+            let messageIndex = 1;
+            messageInterval = setInterval(() => {
+                loadingMessage.textContent = loadingMessages[messageIndex % loadingMessages.length];
+                messageIndex++;
+            }, 4000); // Change message every 4 seconds
+        }
+
+        function stopLoadingMessages() {
+            clearInterval(messageInterval);
+            loadingMessage.textContent = 'Submitting, please wait...'; // Reset to default
+        }
+
         // --- Form Submission Logic ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -251,24 +270,18 @@
             submitButton.textContent = 'Submitting...';
             loadingSpinner.classList.remove('hidden');
             statusMessage.classList.add('hidden');
+            startLoadingMessages(); // Start the dynamic messages
 
             try {
-                // Create a list of all file-reading promises
                 const filePromises = [];
-                
-                // Add the main presentation file
                 filePromises.push(readFileAsBase64(presentationFile));
-
-                // Add all additional files
                 for (const file of additionalFilesInput.files) {
                     filePromises.push(readFileAsBase64(file));
                 }
 
-                // Wait for all files to be read and encoded
                 const allFiles = await Promise.all(filePromises);
-
-                const mainFileData = allFiles.shift(); // First item is the presentation
-                const additionalFilesData = allFiles; // The rest are additional files
+                const mainFileData = allFiles.shift();
+                const additionalFilesData = allFiles;
 
                 const payload = {
                     password: scriptPassword,
@@ -277,7 +290,7 @@
                     serviceDate: form.serviceDate.value,
                     senderEmail: form.senderEmail.value,
                     notes: form.notes.value,
-                    ...mainFileData, // Spreads fileName, mimeType, fileData
+                    ...mainFileData,
                     additionalFiles: additionalFilesData
                 };
                 
@@ -310,6 +323,7 @@
                 submitButton.textContent = 'Submit Information';
                 loadingSpinner.classList.add('hidden');
                 statusMessage.classList.remove('hidden');
+                stopLoadingMessages(); // Stop the dynamic messages
             }
         });
     </script>
