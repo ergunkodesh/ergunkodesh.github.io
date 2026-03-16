@@ -18,7 +18,7 @@
           var parts = l.search.slice(1).split('&').map(function(s) { return s.replace(/~and~/g, '&'); });
           var path = parts[0].slice(2);
           var query = parts[1] ? '?' + parts[1].slice(2) : '';
-          window.history.replaceState(null, null, l.pathname + path + query + l.hash);
+          window.history.replaceState(null, null, l.pathname.replace(/\/$/, '') + path + query + l.hash);
         }
       }(window.location));
     </script>
