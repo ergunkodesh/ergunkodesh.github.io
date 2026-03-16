@@ -1,0 +1,25 @@
+{
+  "name": "SED Dashboard — Anchor Falls",
+  "short_name": "SED",
+  "description": "Service Experience Director dashboard for Anchor Falls Church",
+  "start_url": "/sed/",
+  "scope": "/sed/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F1117",
+  "theme_color": "#0F1117",
+  "icons": [
+    {
+      "src": "/sed/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/sed/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
