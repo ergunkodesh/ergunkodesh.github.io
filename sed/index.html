@@ -11,6 +11,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="SED" />
     <title>SED Dashboard — Anchor Falls</title>
+    <!-- GitHub Pages SPA redirect: restore path encoded by 404.html -->
+    <script>
+      (function(l) {
+        if (l.search[1] === 'p') {
+          var parts = l.search.slice(1).split('&').map(function(s) { return s.replace(/~and~/g, '&'); });
+          var path = parts[0].slice(2);
+          var query = parts[1] ? '?' + parts[1].slice(2) : '';
+          window.history.replaceState(null, null, l.pathname + path + query + l.hash);
+        }
+      }(window.location));
+    </script>
     <script type="module" crossorigin src="/sed/assets/index-BZbLEVth.js"></script>
     <link rel="stylesheet" crossorigin href="/sed/assets/index-CweWZuss.css">
   </head>
