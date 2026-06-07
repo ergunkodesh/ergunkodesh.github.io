@@ -6,8 +6,8 @@
   "scope": "/sed/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#1B2535",
-  "theme_color": "#1B2535",
+  "background_color": "#0F1117",
+  "theme_color": "#0F1117",
   "icons": [
     {
       "src": "/sed/icon-192.png",

@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/sed/favicon.svg" />
-    <link rel="manifest" href="/sed/manifest.json" />
-    <link rel="apple-touch-icon" href="/sed/apple-touch-icon.png" />
+    <!-- Paths are relative so Vite's base ('/sed/') prepends correctly in both
+         dev and prod. Absolute '/sed/...' here causes Vite dev to double-prefix
+         to '/sed/sed/...' (Chrome then logs a manifest parse error). -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#2C3E50" />
+    <meta name="theme-color" content="#0F1117" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="SED" />
@@ -22,8 +25,8 @@
         }
       }(window.location));
     </script>
-    <script type="module" crossorigin src="/sed/assets/index-8F6nL2f9.js"></script>
-    <link rel="stylesheet" crossorigin href="/sed/assets/index-C8xoYvYr.css">
+    <script type="module" crossorigin src="/sed/assets/index-CEPEHc3F.js"></script>
+    <link rel="stylesheet" crossorigin href="/sed/assets/index-C53uNLvZ.css">
   </head>
   <body>
     <div id="root"></div>
