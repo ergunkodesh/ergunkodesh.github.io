@@ -311,6 +311,66 @@ function geminiTextFromResponse_(parsed) {
   };
 }
 
+function parseScriptureRefs_(raw) {
+  var s = String(raw || '').trim();
+  if (!s || /^no scriptures found\.?$/i.test(s)) return [];
+  s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  try {
+    var parsed = JSON.parse(s);
+    if (Array.isArray(parsed)) {
+      return parsed.map(function (x) { return String(x || '').trim(); }).filter(Boolean);
+    }
+  } catch (err) {
+    // Fall through to line scrape.
+  }
+  var lines = s.split(/\r?\n/);
+  var refs = [];
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].replace(/^[\s*•\-]+\s*/, '').replace(/^["']|["']$/g, '').trim();
+    if (!line || line.charAt(0) === '[' || line.charAt(0) === ']') continue;
+    line = line.replace(/,$/, '').replace(/^"|"$/g, '');
+    if (/[1-3]?\s*[A-Za-z]+\s+\d+:\d+/.test(line)) refs.push(line);
+  }
+  return refs;
+}
+
+function lookupWebVerse_(ref) {
+  var url = 'https://bible-api.com/' + encodeURIComponent(ref) + '?translation=web';
+  try {
+    var resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true });
+    if (resp.getResponseCode() !== 200) return null;
+    var j = JSON.parse(resp.getContentText());
+    if (!j || !j.text) return null;
+    return {
+      reference: j.reference || ref,
+      text: String(j.text).replace(/\s+/g, ' ').trim()
+    };
+  } catch (err) {
+    return null;
+  }
+}
+
+function buildScripturesDoc_(refs) {
+  if (!refs.length) return 'No scriptures found.\n';
+  var out = [];
+  out.push('Scripture references extracted from the slides.');
+  out.push('Verse text is World English Bible (public domain).');
+  out.push('The speaker may have used a different translation — see presentation text.txt.');
+  out.push('');
+  for (var i = 0; i < refs.length; i++) {
+    var hit = lookupWebVerse_(refs[i]);
+    if (hit) {
+      out.push(hit.reference + ' (WEB)');
+      out.push(hit.text);
+    } else {
+      out.push(refs[i]);
+      out.push('(Could not fetch public-domain text. Use the slides / presentation text.txt.)');
+    }
+    out.push('');
+  }
+  return out.join('\n');
+}
+
 function callGeminiOnce_(presentationText, serviceDate) {
   var contextDetails = {
     step: 'getCorrectedScripturesFromGemini',
@@ -325,10 +385,13 @@ function callGeminiOnce_(presentationText, serviceDate) {
     return { text: '', error: 'No presentation text for scripture assist' };
   }
   try {
+    // References only — do not ask Gemini to quote Bible text (RECITATION blocks ESV/NIV).
     var prompt =
-      'From the sermon slide text below, extract scripture references and quote ' +
-      'the passages clearly (ESV if unsure). Fix obvious reference typos. ' +
-      'If none, reply with exactly: No scriptures found.\n\n' +
+      'From the sermon slide text below, extract every scripture reference. ' +
+      'Normalize each to Book Chapter:Verse or Book Chapter:Verse-Verse ' +
+      '(example: John 3:16 or Romans 8:28-30). Expand abbreviations (Jn → John, 1 Cor → 1 Corinthians). ' +
+      'Return ONLY a JSON array of strings, no other text. Example: ["John 3:16","Romans 8:28-30"]. ' +
+      'If none, return [].\n\n' +
       presentationText.slice(0, 120000);
 
     var url =
@@ -342,7 +405,7 @@ function callGeminiOnce_(presentationText, serviceDate) {
       payload: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
-          maxOutputTokens: 8192,
+          maxOutputTokens: 2048,
           thinkingConfig: { thinkingLevel: 'minimal' }
         }
       })
@@ -357,8 +420,7 @@ function callGeminiOnce_(presentationText, serviceDate) {
       return { text: '', error: 'Gemini HTTP ' + code };
     }
     var parsed = JSON.parse(body);
-    var extracted = geminiTextFromResponse_(parsed);
-    return extracted;
+    return geminiTextFromResponse_(parsed);
   } catch (err) {
     reportError_('Gemini step failed: ' + err, contextDetails);
     return { text: '', error: String(err) };
@@ -366,29 +428,30 @@ function callGeminiOnce_(presentationText, serviceDate) {
 }
 
 /**
- * Gemini with one retry. On persistent failure, caller notifies teams with a note.
+ * Gemini extracts/normalizes references only (avoids RECITATION). Verse text
+ * is looked up from bible-api.com WEB (public domain), labeled as WEB.
  */
 function getCorrectedScripturesFromGemini_(presentationText, serviceDate) {
   var first = callGeminiOnce_(presentationText, serviceDate);
-  if (first.text) {
-    return { text: first.text, failed: false, error: '' };
+  var raw = first.text;
+  if (!raw) {
+    if (first.error === 'GEMINI_API_KEY not configured' ||
+        first.error === 'No presentation text for scripture assist') {
+      return { text: '', failed: false, error: first.error };
+    }
+    Utilities.sleep(1500);
+    var second = callGeminiOnce_(presentationText, serviceDate);
+    raw = second.text;
+    if (!raw) {
+      return {
+        text: '',
+        failed: true,
+        error: second.error || first.error || 'Gemini scripture assist failed'
+      };
+    }
   }
-  // No key / no text: skip without retry noise (not a hard failure).
-  if (first.error === 'GEMINI_API_KEY not configured' ||
-      first.error === 'No presentation text for scripture assist') {
-    return { text: '', failed: false, error: first.error };
-  }
-  // Retry once for reliability (transient HTTP / empty / throw).
-  Utilities.sleep(1500);
-  var second = callGeminiOnce_(presentationText, serviceDate);
-  if (second.text) {
-    return { text: second.text, failed: false, error: '' };
-  }
-  return {
-    text: '',
-    failed: true,
-    error: second.error || first.error || 'Gemini scripture assist failed'
-  };
+  var refs = parseScriptureRefs_(raw);
+  return { text: buildScripturesDoc_(refs), failed: false, error: '' };
 }
 
 function maybeGrantReader_(folderId, email) {
