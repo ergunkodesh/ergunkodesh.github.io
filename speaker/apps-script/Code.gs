@@ -313,33 +313,57 @@ function geminiTextFromResponse_(parsed) {
   };
 }
 
-function scriptureExcerptsFromSlides_(presentationText) {
+function scriptureSlideBlocks_(presentationText) {
   var raw = String(presentationText || '');
-  if (!raw.trim()) return '';
   var blocks = raw.split(/--- Slide \d+ ---/);
-  var out = [];
   var refRe = /\b(?:[1-3]\s*)?[A-Z][A-Za-z]+\s+\d+:\d+(?:\s*[-–]\s*\d+)?\b/;
+  var hits = [];
   for (var i = 0; i < blocks.length; i++) {
     var body = blocks[i].trim();
     if (!body) continue;
     if (refRe.test(body) || /(?:esv|niv|nkjv|nlt|kjv|nasb|csb)\b/i.test(body)) {
-      out.push('--- Slide ' + i + ' ---\n' + body);
+      hits.push(body);
     }
   }
-  if (!out.length) return '';
-  return (
-    'Scripture text copied from the slides for lower thirds.\n' +
-    'Gemini did not rewrite or supply a translation.\n\n' +
-    out.join('\n\n')
-  );
+  return hits;
 }
 
-function callGeminiOnce_(presentationText, serviceDate, strictCopy) {
+function cleanScriptureWording_(text) {
+  var lines = String(text || '').split(/\r?\n/);
+  var out = [];
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    if (/^--- Slide/i.test(line) || /^\[Speaker notes\]/i.test(line)) continue;
+    line = line.replace(/^\s*\d{1,3}[.)]?\s+/, '');
+    line = line.replace(/\s*\((?:ESV|NIV|NKJV|NLT|KJV|NASB|CSB|AMP|MSG|WEB)\)\s*/gi, ' ');
+    line = line.replace(/\s{2,}/g, ' ').trim();
+    if (line) out.push(line);
+  }
+  return out.join(' ').replace(/\s{2,}/g, ' ').trim();
+}
+
+function scripturesFromSlideCleanup_(presentationText) {
+  var blocks = scriptureSlideBlocks_(presentationText);
+  if (!blocks.length) return '';
+  var out = [];
+  out.push('Scripture text cleaned from the slides for lower thirds.');
+  out.push('Verse numbers and translation tags stripped. Wording not generated.');
+  out.push('');
+  for (var i = 0; i < blocks.length; i++) {
+    var cleaned = cleanScriptureWording_(blocks[i]);
+    if (cleaned) {
+      out.push(cleaned);
+      out.push('');
+    }
+  }
+  return out.join('\n').trim() + '\n';
+}
+
+function callGeminiOnce_(presentationText, serviceDate) {
   var contextDetails = {
     step: 'getCorrectedScripturesFromGemini',
     serviceDate: serviceDate || '',
-    textLength: presentationText ? presentationText.length : 0,
-    strictCopy: !!strictCopy
+    textLength: presentationText ? presentationText.length : 0
   };
   var apiKey = getProp_('GEMINI_API_KEY', '');
   if (!apiKey) {
@@ -349,22 +373,15 @@ function callGeminiOnce_(presentationText, serviceDate, strictCopy) {
     return { text: '', error: 'No presentation text for scripture assist', recitation: false };
   }
   try {
-    var prompt = strictCopy
-      ? (
-        'The slide text below is the only allowed source. Copy scripture references and any verse wording that already appears in it, verbatim. ' +
-        'Do not complete a verse, do not quote from memory, do not pick a translation. ' +
-        'Format for livestream lower thirds (reference, then the copied wording). ' +
-        'If a reference has no wording on the slides, output the reference and nearby slide lines only.\n\n' +
-        presentationText.slice(0, 120000)
-      )
-      : (
-        'You are preparing livestream lower thirds. The speaker will read the passage as it appears on these slides. ' +
-        'From the slide text below: (1) fix obvious reference typos and expand abbreviations, ' +
-        '(2) copy the verse wording that is already on the slides — do not recall, complete, or translate verses from memory, ' +
-        '(3) format each as: reference on one line, then the copied wording. ' +
-        'If none, reply with exactly: No scriptures found.\n\n' +
-        presentationText.slice(0, 120000)
-      );
+    var prompt =
+      'Prepare livestream lower thirds from the sermon slide text below. ' +
+      'Keep the speaker\'s wording. Remove verse numbers, citation tags like (ESV), ' +
+      'and extra reference notes that should not appear on screen. ' +
+      'Fix obvious book-name typos. ' +
+      'Do not add, complete, or replace any verse from memory or another translation. ' +
+      'Output plain text: a reference line, then the cleaned wording, then a blank line. ' +
+      'If none, reply with exactly: No scriptures found.\n\n' +
+      presentationText.slice(0, 120000);
 
     var url =
       'https://generativelanguage.googleapis.com/v1beta/models/' +
@@ -400,31 +417,34 @@ function callGeminiOnce_(presentationText, serviceDate, strictCopy) {
 }
 
 /**
- * Lower-thirds file: verse wording from the slides, not a generated translation.
- * Gemini 3.x RECITATION fires when the model quotes Bible text from memory
- * (the old "ESV if unsure" prompt). Copy-from-slides avoids that. If Gemini
- * still recites/empties, fall back to slide excerpts so Sunday is not blocked.
+ * Second TXT is cleaned lower-thirds copy of scripture already on the slides
+ * (strip verse numbers / notes). Not a second dump, not a generated translation.
+ * Gemini 3.x may RECITATION on Bible-like output; then fall back to local cleanup.
  */
 function getCorrectedScripturesFromGemini_(presentationText, serviceDate) {
-  var first = callGeminiOnce_(presentationText, serviceDate, false);
-  if (first.text) {
+  var first = callGeminiOnce_(presentationText, serviceDate);
+  if (first.text && !first.recitation) {
     return { text: first.text, failed: false, error: '' };
   }
   if (first.error === 'GEMINI_API_KEY not configured' ||
       first.error === 'No presentation text for scripture assist') {
-    var excerptOnly = scriptureExcerptsFromSlides_(presentationText);
-    return excerptOnly
-      ? { text: excerptOnly, failed: false, error: first.error }
+    var localOnly = scripturesFromSlideCleanup_(presentationText);
+    return localOnly
+      ? { text: localOnly, failed: false, error: first.error }
       : { text: '', failed: false, error: first.error };
   }
   Utilities.sleep(1500);
-  var second = callGeminiOnce_(presentationText, serviceDate, true);
-  if (second.text) {
+  var second = callGeminiOnce_(presentationText, serviceDate);
+  if (second.text && !second.recitation) {
     return { text: second.text, failed: false, error: '' };
   }
-  var excerpt = scriptureExcerptsFromSlides_(presentationText);
-  if (excerpt) {
-    return { text: excerpt, failed: false, error: second.error || first.error };
+  var cleaned = scripturesFromSlideCleanup_(presentationText);
+  if (cleaned) {
+    return {
+      text: cleaned,
+      failed: false,
+      error: second.error || first.error || 'used local cleanup'
+    };
   }
   return {
     text: '',
