@@ -313,7 +313,7 @@ function callGeminiOnce_(presentationText, serviceDate) {
 
     var url =
       'https://generativelanguage.googleapis.com/v1beta/models/' +
-      'gemini-2.0-flash:generateContent?key=' + encodeURIComponent(apiKey);
+      'gemini-3.6-flash:generateContent?key=' + encodeURIComponent(apiKey);
 
     var response = UrlFetchApp.fetch(url, {
       method: 'post',
