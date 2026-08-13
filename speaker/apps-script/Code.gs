@@ -294,7 +294,7 @@ function extractTextFromPresentation_(file, serviceDate) {
 function geminiTextFromResponse_(parsed) {
   var cand = parsed && parsed.candidates && parsed.candidates[0];
   if (!cand) {
-    return { text: '', error: 'No Gemini candidates', recitation: false };
+    return { text: '', error: 'No Gemini candidates' };
   }
   var parts = (cand.content && cand.content.parts) || [];
   var chunks = [];
@@ -303,60 +303,12 @@ function geminiTextFromResponse_(parsed) {
     if (parts[i].text) chunks.push(String(parts[i].text));
   }
   var text = chunks.join('\n').trim();
+  if (text) return { text: text, error: '' };
   var reason = cand.finishReason || '';
-  var recitation = reason === 'RECITATION';
-  if (text) return { text: text, error: '', recitation: recitation };
   return {
     text: '',
-    recitation: recitation,
     error: 'Empty Gemini response' + (reason ? ' (' + reason + ')' : '')
   };
-}
-
-function scriptureSlideBlocks_(presentationText) {
-  var raw = String(presentationText || '');
-  var blocks = raw.split(/--- Slide \d+ ---/);
-  var refRe = /\b(?:[1-3]\s*)?[A-Z][A-Za-z]+\s+\d+:\d+(?:\s*[-–]\s*\d+)?\b/;
-  var hits = [];
-  for (var i = 0; i < blocks.length; i++) {
-    var body = blocks[i].trim();
-    if (!body) continue;
-    if (refRe.test(body) || /(?:esv|niv|nkjv|nlt|kjv|nasb|csb)\b/i.test(body)) {
-      hits.push(body);
-    }
-  }
-  return hits;
-}
-
-function cleanScriptureWording_(text) {
-  var lines = String(text || '').split(/\r?\n/);
-  var out = [];
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i];
-    if (/^--- Slide/i.test(line) || /^\[Speaker notes\]/i.test(line)) continue;
-    line = line.replace(/^\s*\d{1,3}[.)]?\s+/, '');
-    line = line.replace(/\s*\((?:ESV|NIV|NKJV|NLT|KJV|NASB|CSB|AMP|MSG|WEB)\)\s*/gi, ' ');
-    line = line.replace(/\s{2,}/g, ' ').trim();
-    if (line) out.push(line);
-  }
-  return out.join(' ').replace(/\s{2,}/g, ' ').trim();
-}
-
-function scripturesFromSlideCleanup_(presentationText) {
-  var blocks = scriptureSlideBlocks_(presentationText);
-  if (!blocks.length) return '';
-  var out = [];
-  out.push('Scripture text cleaned from the slides for lower thirds.');
-  out.push('Verse numbers and translation tags stripped. Wording not generated.');
-  out.push('');
-  for (var i = 0; i < blocks.length; i++) {
-    var cleaned = cleanScriptureWording_(blocks[i]);
-    if (cleaned) {
-      out.push(cleaned);
-      out.push('');
-    }
-  }
-  return out.join('\n').trim() + '\n';
 }
 
 function callGeminiOnce_(presentationText, serviceDate) {
@@ -367,19 +319,15 @@ function callGeminiOnce_(presentationText, serviceDate) {
   };
   var apiKey = getProp_('GEMINI_API_KEY', '');
   if (!apiKey) {
-    return { text: '', error: 'GEMINI_API_KEY not configured', recitation: false };
+    return { text: '', error: 'GEMINI_API_KEY not configured' };
   }
   if (!presentationText) {
-    return { text: '', error: 'No presentation text for scripture assist', recitation: false };
+    return { text: '', error: 'No presentation text for scripture assist' };
   }
   try {
     var prompt =
-      'Prepare livestream lower thirds from the sermon slide text below. ' +
-      'Keep the speaker\'s wording. Remove verse numbers, citation tags like (ESV), ' +
-      'and extra reference notes that should not appear on screen. ' +
-      'Fix obvious book-name typos. ' +
-      'Do not add, complete, or replace any verse from memory or another translation. ' +
-      'Output plain text: a reference line, then the cleaned wording, then a blank line. ' +
+      'From the sermon slide text below, extract scripture references and quote ' +
+      'the passages clearly (ESV if unsure). Fix obvious reference typos. ' +
       'If none, reply with exactly: No scriptures found.\n\n' +
       presentationText.slice(0, 120000);
 
@@ -406,45 +354,33 @@ function callGeminiOnce_(presentationText, serviceDate) {
       reportError_('Gemini HTTP ' + code, Object.assign({}, contextDetails, {
         body: body.slice(0, 1000)
       }));
-      return { text: '', error: 'Gemini HTTP ' + code, recitation: false };
+      return { text: '', error: 'Gemini HTTP ' + code };
     }
     var parsed = JSON.parse(body);
     return geminiTextFromResponse_(parsed);
   } catch (err) {
     reportError_('Gemini step failed: ' + err, contextDetails);
-    return { text: '', error: String(err), recitation: false };
+    return { text: '', error: String(err) };
   }
 }
 
 /**
- * Second TXT is cleaned lower-thirds copy of scripture already on the slides
- * (strip verse numbers / notes). Not a second dump, not a generated translation.
- * Gemini 3.x may RECITATION on Bible-like output; then fall back to local cleanup.
+ * Original scripture prompt, gemini-3.6-flash. Retry once. New ACK/queue
+ * still writes FAILED.txt + notifies if both attempts return no text.
  */
 function getCorrectedScripturesFromGemini_(presentationText, serviceDate) {
   var first = callGeminiOnce_(presentationText, serviceDate);
-  if (first.text && !first.recitation) {
+  if (first.text) {
     return { text: first.text, failed: false, error: '' };
   }
   if (first.error === 'GEMINI_API_KEY not configured' ||
       first.error === 'No presentation text for scripture assist') {
-    var localOnly = scripturesFromSlideCleanup_(presentationText);
-    return localOnly
-      ? { text: localOnly, failed: false, error: first.error }
-      : { text: '', failed: false, error: first.error };
+    return { text: '', failed: false, error: first.error };
   }
   Utilities.sleep(1500);
   var second = callGeminiOnce_(presentationText, serviceDate);
-  if (second.text && !second.recitation) {
+  if (second.text) {
     return { text: second.text, failed: false, error: '' };
-  }
-  var cleaned = scripturesFromSlideCleanup_(presentationText);
-  if (cleaned) {
-    return {
-      text: cleaned,
-      failed: false,
-      error: second.error || first.error || 'used local cleanup'
-    };
   }
   return {
     text: '',
