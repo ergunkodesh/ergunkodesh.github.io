@@ -417,25 +417,32 @@ function buildNotifyEmailHtml_(data) {
  * GAS cannot finish HTTP after return; a separate execution does late work.
  * Skip-if-exists is OK for a recurring trigger — do not delete here.
  */
-function scheduleProcessQueue_() {
+function removeProcessorTriggers_() {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
     if (triggers[i].getHandlerFunction() === PROCESS_TRIGGER_HANDLER) {
-      return;
+      ScriptApp.deleteTrigger(triggers[i]);
     }
   }
+}
+
+function scheduleProcessQueue_() {
+  // One-shot backup ~1 min after submit. Do not use everyMinutes — this
+  // portal sees ~1–3 submissions a week. Client kickProcessor is the fast path.
+  removeProcessorTriggers_();
   ScriptApp.newTrigger(PROCESS_TRIGGER_HANDLER)
     .timeBased()
-    .everyMinutes(1)
+    .after(60 * 1000)
     .create();
 }
 
 function cleanupProcessTriggers_() {
-  // Do not delete the recurring 1-minute drain; empty queue is cheap.
+  if (listPendingJobs_().length) return;
+  removeProcessorTriggers_();
 }
 
 /**
- * Arm the recurring processor. Must NOT UrlFetch the same /exec —
+ * Arm a one-shot backup. Must NOT UrlFetch the same /exec —
  * nested fetch 404s the parent macros/echo URL (speaker ACK).
  */
 function kickProcessAsync_(submissionId) {
@@ -447,10 +454,15 @@ function kickProcessAsync_(submissionId) {
   }
 }
 
+function uninstallMinuteDrain() {
+  // Run once after deploying this version to delete the every-1-minute trigger.
+  removeProcessorTriggers_();
+}
+
 function installProcessorTrigger() {
-  // Run once from the Apps Script editor (Run ▶) to grant ScriptApp
-  // trigger scopes, then redeploy. Safe to re-run.
-  scheduleProcessQueue_();
+  // Kept so the editor Run menu still has it. Now only grants/uses ScriptApp
+  // by clearing leftover drains — does not arm a recurring poll.
+  uninstallMinuteDrain();
 }
 
 /**
