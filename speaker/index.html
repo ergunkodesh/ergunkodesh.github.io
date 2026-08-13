@@ -354,6 +354,24 @@
                 return 'sub_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
             }
 
+            async function kickProcessor(submissionId) {
+                try {
+                    await fetch(config.googleScriptUrl, {
+                        method: 'POST',
+                        redirect: 'follow',
+                        keepalive: true,
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            password: config.scriptPassword,
+                            action: 'processSubmission',
+                            submissionId: submissionId
+                        })
+                    });
+                } catch (kickErr) {
+                    console.warn('Processor kick failed; 1-minute trigger should retry', kickErr);
+                }
+            }
+
             let messageInterval;
             const loadingMessages = [
                 'Uploading your files...',
@@ -450,6 +468,7 @@
                     }
 
                     if (result && result.status === 'success') {
+                        await kickProcessor(payload.submissionId);
                         showStatus(
                             'success',
                             'Upload complete',
@@ -465,6 +484,7 @@
                     } else if (response.status === 404) {
                         // Classic GAS: ContentService JSON + redirect:follow →
                         // script.googleusercontent.com/macros/echo often 404s AFTER successful doPost.
+                        await kickProcessor(payload.submissionId);
                         showStatus(
                             'success',
                             'Upload complete',
