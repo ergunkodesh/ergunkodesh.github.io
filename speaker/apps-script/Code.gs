@@ -291,6 +291,26 @@ function extractTextFromPresentation_(file, serviceDate) {
 /**
  * Single Gemini attempt. Returns { text, error }.
  */
+function geminiTextFromResponse_(parsed) {
+  var cand = parsed && parsed.candidates && parsed.candidates[0];
+  if (!cand) {
+    return { text: '', error: 'No Gemini candidates' };
+  }
+  var parts = (cand.content && cand.content.parts) || [];
+  var chunks = [];
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i].thought) continue;
+    if (parts[i].text) chunks.push(String(parts[i].text));
+  }
+  var text = chunks.join('\n').trim();
+  if (text) return { text: text, error: '' };
+  var reason = cand.finishReason || '';
+  return {
+    text: '',
+    error: 'Empty Gemini response' + (reason ? ' (' + reason + ')' : '')
+  };
+}
+
 function callGeminiOnce_(presentationText, serviceDate) {
   var contextDetails = {
     step: 'getCorrectedScripturesFromGemini',
@@ -320,7 +340,11 @@ function callGeminiOnce_(presentationText, serviceDate) {
       contentType: 'application/json',
       muteHttpExceptions: true,
       payload: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }]
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 8192,
+          thinkingConfig: { thinkingLevel: 'minimal' }
+        }
       })
     });
 
@@ -333,15 +357,8 @@ function callGeminiOnce_(presentationText, serviceDate) {
       return { text: '', error: 'Gemini HTTP ' + code };
     }
     var parsed = JSON.parse(body);
-    var text =
-      parsed &&
-      parsed.candidates &&
-      parsed.candidates[0] &&
-      parsed.candidates[0].content &&
-      parsed.candidates[0].content.parts &&
-      parsed.candidates[0].content.parts[0] &&
-      parsed.candidates[0].content.parts[0].text;
-    return { text: text ? String(text) : '', error: text ? '' : 'Empty Gemini response' };
+    var extracted = geminiTextFromResponse_(parsed);
+    return extracted;
   } catch (err) {
     reportError_('Gemini step failed: ' + err, contextDetails);
     return { text: '', error: String(err) };
