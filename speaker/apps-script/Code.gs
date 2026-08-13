@@ -329,6 +329,13 @@ function callGeminiOnce_(presentationText, serviceDate) {
       'From the sermon slide text below, extract scripture references and quote ' +
       'the passages clearly (ESV if unsure). Fix obvious reference typos. ' +
       'If none, reply with exactly: No scriptures found.\n\n' +
+      'Output format (required):\n' +
+      '--- Slide N ---\n' +
+      '<passage wording only, no inline verse numbers>\n' +
+      'Book Chapter:Verses (VERSION)\n\n' +
+      'Keep the source slide numbers. Infer VERSION from the speaker\'s wording ' +
+      '(NIV, NLT, ESV, etc.). Continuation slides may omit the citation line ' +
+      'until the passage completes. Include title slides.\n\n' +
       presentationText.slice(0, 120000);
 
     var url =
