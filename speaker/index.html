@@ -467,28 +467,31 @@
                         result = null;
                     }
 
-                    if (result && result.status === 'success') {
-                        await kickProcessor(payload.submissionId);
-                        showStatus(
-                            'success',
-                            'Upload complete',
-                            (result.message || 'You\'re done — your presentation was saved.') +
-                            (result.duplicate ? ' (This matched a previous submission and was not duplicated.)' : '') +
-                            '<p class="mt-2 text-xs text-green-900/80">Media is notified after slide text processing finishes — not on the raw upload alone.</p>'
-                        );
-                        form.reset();
-                        serviceDateInput.value = getNextServiceDate();
-                        additionalFilesList.innerHTML = '';
-                    } else if (result && result.status === 'error') {
+                    if (result && result.status === 'error') {
                         throw new Error(result.message || 'An unknown server error occurred.');
-                    } else if (response.status === 404) {
-                        // Classic GAS: ContentService JSON + redirect:follow →
-                        // script.googleusercontent.com/macros/echo often 404s AFTER successful doPost.
-                        await kickProcessor(payload.submissionId);
+                    }
+
+                    // GAS doPost often 302s to macros/echo; the browser GET may be
+                    // {status:'ok'} (live doGet), 404, 405, or empty/non-JSON after a
+                    // completed POST. Treat those as upload ACK, not a network failure.
+                    const uploadAck =
+                        (result && result.status === 'success') ||
+                        (result && result.status === 'ok') ||
+                        response.status === 404 ||
+                        response.status === 405 ||
+                        (response.ok && !result);
+
+                    if (uploadAck) {
+                        void kickProcessor(payload.submissionId);
+                        const ackMessage =
+                            (result && result.message) ||
+                            'Upload complete — you\'re done. The media team is notified after slide text and scripture processing finish.';
                         showStatus(
                             'success',
                             'Upload complete',
-                            'Your presentation was saved. Slide text files usually appear in the Drive folder within a minute. If they do not, email media@anchorfalls.org.'
+                            ackMessage +
+                            (result && result.duplicate ? ' (This matched a previous submission and was not duplicated.)' : '') +
+                            '<p class="mt-2 text-xs text-green-900/80">Media is notified after slide text processing finishes — not on the raw upload alone.</p>'
                         );
                         form.reset();
                         serviceDateInput.value = getNextServiceDate();
