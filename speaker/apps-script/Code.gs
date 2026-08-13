@@ -13,17 +13,18 @@
  *   NOTIFY_EMAILS     = comma-separated recipients (church addresses only)
  *   ERROR_EMAILS      = comma-separated error recipients (optional; defaults to NOTIFY_EMAILS)
  *   GEMINI_API_KEY    = optional; scripture assist only — never blocks speaker ACK
- *   WEB_APP_URL       = optional; this deployment's /exec URL. When set, doPost
- *                       kick-starts processSubmission via a short-timeout self-call
- *                       (faster than waiting for the one-shot time trigger alone).
+ *   WEB_APP_URL       = unused. Do NOT UrlFetch the web app from doPost — a nested
+ *                       fetch to the same /exec 404s the parent macros/echo URL
+ *                       (speaker ACK). The browser may POST action=processSubmission
+ *                       after upload; a recurring 1-minute trigger is the drain.
  *
  * Also enable Advanced Google services if not already:
  *   - Drive API
  *   - Google Slides API
  *
  * After deploy: put the /exec URL into speaker/config.js as googleScriptUrl,
- * rotate SCRIPT_PASSWORD (old HTML passwords are public), optionally set
- * WEB_APP_URL to the same /exec URL, and test once.
+ * rotate SCRIPT_PASSWORD (old HTML passwords are public), Run installProcessorTrigger
+ * once from the editor (grants ScriptApp trigger scopes), then redeploy.
  *
  * PRODUCT BEHAVIOR (Jason's rules):
  *   1) Page gate (pagePassword) may be off — unlisted URL is enough friction;
@@ -36,9 +37,10 @@
  *      the text doc + a note that scripture assist failed (teams must not wait
  *      forever). Do NOT notify on raw upload alone.
  *   4) Early-ACK pattern in GAS: doPost saves files, enqueues a pending job,
- *      schedules processQueuedSubmissions (and optionally self-calls
- *      processSubmission with a 1s UrlFetch timeout), then returns JSON success.
- *      Heavy work runs in a separate execution. See speaker/README.md.
+ *      arms a recurring 1-minute processQueuedSubmissions trigger, then returns
+ *      JSON success. Do not UrlFetch /exec from this execution. Heavy work runs
+ *      in a separate execution (browser kick and/or the 1-minute drain).
+ *      See speaker/README.md.
  *
  * This is a reliability bridge. Longer-term intake: docs/SPEAKER_PORTAL_REBUILD.md
  */
@@ -411,39 +413,30 @@ function buildNotifyEmailHtml_(data) {
 }
 
 /**
- * Arm a one-shot time trigger for the processing queue.
+ * Arm a recurring 1-minute drain for the processing queue.
  * GAS cannot finish HTTP after return; a separate execution does late work.
- * Leftover one-shots that never fire would skip-if-exists forever; sub-minute
- * after() is unreliable (min useful is 60s).
+ * Skip-if-exists is OK for a recurring trigger — do not delete here.
  */
 function scheduleProcessQueue_() {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
     if (triggers[i].getHandlerFunction() === PROCESS_TRIGGER_HANDLER) {
-      ScriptApp.deleteTrigger(triggers[i]);
+      return;
     }
   }
   ScriptApp.newTrigger(PROCESS_TRIGGER_HANDLER)
     .timeBased()
-    .after(60 * 1000)
+    .everyMinutes(1)
     .create();
 }
 
 function cleanupProcessTriggers_() {
-  var remaining = listPendingJobs_();
-  if (remaining.length) return;
-  var triggers = ScriptApp.getProjectTriggers();
-  for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === PROCESS_TRIGGER_HANDLER) {
-      ScriptApp.deleteTrigger(triggers[i]);
-    }
-  }
+  // Do not delete the recurring 1-minute drain; empty queue is cheap.
 }
 
 /**
- * Optional faster kickoff: POST action=processSubmission to WEB_APP_URL with
- * a 1-second UrlFetch timeout so this execution can return while the worker
- * continues. Falls back silently to the time trigger if unset/unsupported.
+ * Arm the recurring processor. Must NOT UrlFetch the same /exec —
+ * nested fetch 404s the parent macros/echo URL (speaker ACK).
  */
 function kickProcessAsync_(submissionId) {
   try {
@@ -452,27 +445,12 @@ function kickProcessAsync_(submissionId) {
     // Trigger failure must not fail the speaker ACK after files are saved.
     console.log('scheduleProcessQueue_ failed (ACK still succeeds): ' + err);
   }
+}
 
-  var webAppUrl = getProp_('WEB_APP_URL', '');
-  if (!webAppUrl || !submissionId) return;
-
-  try {
-    UrlFetchApp.fetch(webAppUrl, {
-      method: 'post',
-      contentType: 'text/plain;charset=utf-8',
-      muteHttpExceptions: true,
-      timeoutSeconds: 1,
-      payload: JSON.stringify({
-        password: getProp_('SCRIPT_PASSWORD', ''),
-        action: 'processSubmission',
-        submissionId: submissionId
-      })
-    });
-  } catch (err) {
-    // Expected when timeoutSeconds aborts the wait; worker keeps running.
-    // Also covers environments that reject timeoutSeconds — trigger remains.
-    console.log('kickProcessAsync_ note: ' + err);
-  }
+function installProcessorTrigger() {
+  // Run once from the Apps Script editor (Run ▶) to grant ScriptApp
+  // trigger scopes, then redeploy. Safe to re-run.
+  scheduleProcessQueue_();
 }
 
 /**
