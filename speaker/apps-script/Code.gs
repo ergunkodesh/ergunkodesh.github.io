@@ -333,7 +333,7 @@ function callGeminiOnce_(presentationText, serviceDate) {
 
     var url =
       'https://generativelanguage.googleapis.com/v1beta/models/' +
-      'gemini-3.6-flash:generateContent?key=' + encodeURIComponent(apiKey);
+      'gemini-2.5-flash:generateContent?key=' + encodeURIComponent(apiKey);
 
     var response = UrlFetchApp.fetch(url, {
       method: 'post',
@@ -343,7 +343,7 @@ function callGeminiOnce_(presentationText, serviceDate) {
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         generationConfig: {
           maxOutputTokens: 8192,
-          thinkingConfig: { thinkingLevel: 'minimal' }
+          thinkingConfig: { thinkingBudget: 0 }
         }
       })
     });
@@ -365,7 +365,7 @@ function callGeminiOnce_(presentationText, serviceDate) {
 }
 
 /**
- * Original scripture prompt, gemini-3.6-flash. Retry once. New ACK/queue
+ * Original scripture prompt, gemini-2.5-flash (2.0 successor; thinking off). Retry once. New ACK/queue
  * still writes FAILED.txt + notifies if both attempts return no text.
  */
 function getCorrectedScripturesFromGemini_(presentationText, serviceDate) {
