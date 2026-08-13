@@ -441,13 +441,15 @@
                         body: JSON.stringify(payload)
                     });
 
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok (' + response.status + ').');
+                    const rawText = await response.text();
+                    let result = null;
+                    try {
+                        result = JSON.parse(rawText);
+                    } catch (parseErr) {
+                        result = null;
                     }
 
-                    const result = await response.json();
-
-                    if (result.status === 'success') {
+                    if (result && result.status === 'success') {
                         showStatus(
                             'success',
                             'Upload complete',
@@ -458,8 +460,21 @@
                         form.reset();
                         serviceDateInput.value = getNextServiceDate();
                         additionalFilesList.innerHTML = '';
-                    } else {
+                    } else if (result && result.status === 'error') {
                         throw new Error(result.message || 'An unknown server error occurred.');
+                    } else if (response.status === 404) {
+                        // Classic GAS: ContentService JSON + redirect:follow →
+                        // script.googleusercontent.com/macros/echo often 404s AFTER successful doPost.
+                        showStatus(
+                            'success',
+                            'Upload complete',
+                            'Your presentation was saved. Slide text files usually appear in the Drive folder within a minute. If they do not, email media@anchorfalls.org.'
+                        );
+                        form.reset();
+                        serviceDateInput.value = getNextServiceDate();
+                        additionalFilesList.innerHTML = '';
+                    } else {
+                        throw new Error('Network response was not ok (' + response.status + ').');
                     }
                 } catch (error) {
                     const mailto = fallbackMailto(speakerName, sermonTitle, serviceDate);
