@@ -83,9 +83,15 @@ function parseEmailList_(raw, fallback) {
 }
 
 function jsonResponse_(obj) {
+  // MimeType.JSON from browsers often 404s at the GAS echo URL after a successful
+  // doPost. TEXT still returns a JSON.stringify body and is more reliable.
   return ContentService
     .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+function doGet(e) {
+  return jsonResponse_({ status: 'ok', service: 'speaker-submission' });
 }
 
 function reportError_(message, contextDetails) {
@@ -405,20 +411,21 @@ function buildNotifyEmailHtml_(data) {
 }
 
 /**
- * Ensure a one-shot time trigger exists for the processing queue.
+ * Arm a one-shot time trigger for the processing queue.
  * GAS cannot finish HTTP after return; a separate execution does late work.
- * .after() is typically ~1 minute minimum in practice.
+ * Leftover one-shots that never fire would skip-if-exists forever; sub-minute
+ * after() is unreliable (min useful is 60s).
  */
 function scheduleProcessQueue_() {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
     if (triggers[i].getHandlerFunction() === PROCESS_TRIGGER_HANDLER) {
-      return;
+      ScriptApp.deleteTrigger(triggers[i]);
     }
   }
   ScriptApp.newTrigger(PROCESS_TRIGGER_HANDLER)
     .timeBased()
-    .after(30 * 1000)
+    .after(60 * 1000)
     .create();
 }
 
@@ -439,7 +446,12 @@ function cleanupProcessTriggers_() {
  * continues. Falls back silently to the time trigger if unset/unsupported.
  */
 function kickProcessAsync_(submissionId) {
-  scheduleProcessQueue_();
+  try {
+    scheduleProcessQueue_();
+  } catch (err) {
+    // Trigger failure must not fail the speaker ACK after files are saved.
+    console.log('scheduleProcessQueue_ failed (ACK still succeeds): ' + err);
+  }
 
   var webAppUrl = getProp_('WEB_APP_URL', '');
   if (!webAppUrl || !submissionId) return;
