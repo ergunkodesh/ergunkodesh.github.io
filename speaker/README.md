@@ -22,7 +22,7 @@ This directory is a **reliability bridge**: harden the existing static page + Go
 2. Set:
    - `googleScriptUrl` — Web app `/exec` URL from Apps Script deploy
    - `scriptPassword` — **new** secret; must match Script Property `SCRIPT_PASSWORD`
-   - `pagePassword` — leave `''` for visitor-friendly no-login UX (recommended)
+   - `pagePassword` — **recommended default `''` (off)**. Unlisted `/speaker/` URL is enough friction; keep `scriptPassword` for API auth only
    - `maxTotalUploadBytes` — client cap (default 20 MiB)
    - `fallbackEmail` — default `media@anchorfalls.org`
 3. Deploy `config.js` with the site **without committing it**.
@@ -54,7 +54,8 @@ Project today: **Speaker Submission** under `serviceexperience@anchorfalls.org`.
 | `SHEET_ID` | `1s_D22RcizEnbkPiLB5rvHe-FBk33TWDl2NkIV8VRjtA` (Speaker Submission Log) |
 | `NOTIFY_EMAILS` | `serviceexperience@anchorfalls.org,media@anchorfalls.org,video@anchorfalls.org,communications@anchorfalls.org` |
 | `ERROR_EMAILS` | Optional; defaults to `NOTIFY_EMAILS` |
-| `GEMINI_API_KEY` | Optional; scripture assist only |
+| `GEMINI_API_KEY` | Optional; scripture assist only (never blocks speaker ACK) |
+| `WEB_APP_URL` | Optional; same `/exec` URL as the web app. Enables faster self-call kickoff of `processSubmission` (`timeoutSeconds: 1`). Time trigger still works without it |
 
 4. Deploy → **New deployment** (or new version) → Web app:
    - Execute as: **Me**
@@ -67,10 +68,21 @@ Project today: **Speaker Submission** under `serviceexperience@anchorfalls.org`.
 - Validates password from Script Properties (not hardcoded).
 - Rejects oversized payloads early.
 - Saves presentation + extras under `{serviceDate} - {speakerName}` (versioned if needed).
-- Best-effort slide text + Gemini scripture files; **failures never block** Drive save or notify email.
-- Idempotent when the client sends `submissionId` (retries return success without duplicating work).
+- **Submitter ACK early:** HTTP success returns as soon as files are safely in Drive (plus sheet bookkeeping). Message means upload complete / you’re done — not that teams were already emailed.
+- **Team notify LATE:** `NOTIFY_EMAILS` are emailed only after slide text extraction + text doc, and after the Gemini scripture step + scriptures doc (or failure note). Never on raw upload alone.
+- **Gemini failure path:** retry once; if still failing, notify teams with the text doc + a clear note so Media is not blocked forever. Text-extraction failure also still notifies with a note (files are in Drive).
+- Idempotent when the client sends `submissionId` (retries return success without duplicating folders).
 - HTML-escapes fields in notification email.
 - `contextDetails` is always defined in catch/report paths.
+
+### Early-ACK pattern (Apps Script limits)
+
+Apps Script cannot send the HTTP body and then keep running in the same request: `doPost` returns only when the function ends. Closest correct behavior used here:
+
+1. `doPost` saves files → writes a `PENDING_*` job in Script Properties → schedules one-shot time trigger `processQueuedSubmissions` → optionally self-calls `action=processSubmission` on `WEB_APP_URL` with `UrlFetchApp` `timeoutSeconds: 1` (fire-and-continue) → **returns success JSON to the speaker**.
+2. A **separate execution** runs text extract → text doc → Gemini (retry once) → scriptures doc → `NOTIFY_EMAILS` last.
+3. Without `WEB_APP_URL`, the time trigger alone drains the queue (often ~30–60s later). With `WEB_APP_URL` set to the deployment `/exec` URL, processing usually starts sooner; the trigger remains the reliability backup.
+4. Client copy distinguishes “uploaded / you’re done” from the later team email.
 
 ## Test checklist
 
@@ -79,8 +91,8 @@ Project today: **Speaker Submission** under `serviceexperience@anchorfalls.org`.
 - [ ] Next Sunday (or today if before ~10:00 local Sunday) is prefilled as service date.
 - [ ] Template + Mulish + Montserrat links still work.
 - [ ] Oversized file selection shows a clear size-limit error and mailto fallback.
-- [ ] Happy path: small `.pptx` → success status with ✓ icon + “Success: Submitted”.
-- [ ] Media recipients get one email with Drive folder link; sheet gains a row.
+- [ ] Happy path: small `.pptx` → success status with ✓ icon + “Success: Upload complete” (upload-complete copy; does **not** claim teams were already notified).
+- [ ] Sheet gains a row at upload time; Media recipients get email **only after** text (+ scripture) artifacts exist (or scripture failure note after one retry).
 - [ ] Wrong `scriptPassword` → Failed status + fallback mailto to `media@anchorfalls.org`.
 - [ ] Forced network/server failure → Failed status + same mailto fallback.
 - [ ] Retry with same `submissionId` does not create a duplicate folder (idempotency).

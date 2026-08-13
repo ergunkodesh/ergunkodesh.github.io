@@ -20,7 +20,10 @@ window.SPEAKER_PORTAL_CONFIG = {
   // only; plan Form/Drive cutover (docs/SPEAKER_PORTAL_REBUILD.md).
   scriptPassword: 'REPLACE_WITH_ROTATED_SCRIPT_PASSWORD',
 
-  // Optional soft gate. Leave empty string for visitor-friendly no-login UX.
+  // Recommended default: leave empty. Page gate OFF — the unlisted /speaker/
+  // URL is enough friction for guests. SCRIPT_PASSWORD (scriptPassword below)
+  // still authenticates the Apps Script API. Only set a pagePassword if you
+  // intentionally want an extra soft gate for a specific Sunday.
   pagePassword: '',
 
   // Client-side total upload cap (bytes) before Base64. Keep under typical

@@ -194,7 +194,7 @@
             const defaults = {
                 googleScriptUrl: '',
                 scriptPassword: '',
-                pagePassword: '',
+                pagePassword: '', // recommended default: off; unlisted URL is enough friction
                 maxTotalUploadBytes: 20 * 1024 * 1024,
                 fallbackEmail: 'media@anchorfalls.org'
             };
@@ -353,8 +353,8 @@
             const loadingMessages = [
                 'Uploading your files...',
                 'Saving to the media folder...',
-                'Almost there, hang tight!',
-                'Finalizing the details...'
+                'Almost there — finishing the upload...',
+                'Confirming your files are saved...'
             ];
 
             function startLoadingMessages() {
@@ -445,9 +445,10 @@
                     if (result.status === 'success') {
                         showStatus(
                             'success',
-                            'Submitted',
-                            (result.message || 'Your presentation was received.') +
-                            (result.duplicate ? ' (This matched a previous submission and was not duplicated.)' : '')
+                            'Upload complete',
+                            (result.message || 'You\'re done — your presentation was saved.') +
+                            (result.duplicate ? ' (This matched a previous submission and was not duplicated.)' : '') +
+                            '<p class="mt-2 text-xs text-green-900/80">Media is notified after slide text processing finishes — not on the raw upload alone.</p>'
                         );
                         form.reset();
                         serviceDateInput.value = getNextServiceDate();

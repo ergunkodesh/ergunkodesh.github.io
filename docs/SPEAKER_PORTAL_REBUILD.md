@@ -9,12 +9,22 @@ Guest and staff speakers deliver slide decks and assets to Media, livestream, an
 Keep the familiar static page at `/speaker/` and Google Apps Script backend, but harden it:
 
 - Secrets out of tracked HTML (`config.example.js` + gitignored `config.js`; Script Properties on GAS)
+- Page gate optional: **`pagePassword: ''` recommended** (unlisted URL enough friction); `SCRIPT_PASSWORD` remains for API auth
 - Icon + text status (not color-only; deuteranopia-safe)
 - Client and server size caps with clear errors
 - Submit-failure fallback to `media@anchorfalls.org`
 - Idempotent `submissionId`
-- Gemini/scripture assist must not block file save + notify
+- **Early submitter ACK** after Drive save; **late team notify** only after text + scripture artifacts (Gemini retry once, then notify with failure note)
 - Source for `Code.gs` living in git for review/paste-deploy
+
+### Product timing rules
+
+| Audience | When | Meaning |
+|----------|------|---------|
+| Speaker (browser) | Immediately after presentation (+ optional files) are in Drive | “Upload complete / you’re done” |
+| Media / livestream / video (`NOTIFY_EMAILS`) | After slide text doc written **and** Gemini scripture step finished (doc or failure note) | Ready for Sunday ops — not a raw-upload ping |
+
+GAS limitation: HTTP response is only flushed when `doPost` ends. Early ACK is achieved by saving + enqueueing, kicking a separate execution (time trigger and optional `WEB_APP_URL` self-call with 1s UrlFetch timeout), then returning success — heavy work is not inline before ACK.
 
 This bridge is intentional weekend insurance. It does **not** fix the structural issue that Base64-through-Apps-Script is quota-fragile, or that a browser-visible shared secret is not real auth.
 
@@ -26,7 +36,8 @@ This bridge is intentional weekend insurance. It does **not** fix the structural
 | Large PPTX/Keynote fails | Size caps + email fallback | Direct Drive / Form file upload (not Base64 via GAS) |
 | Duplicate submits | `submissionId` cache | Platform-native idempotency / one folder per speaker+date |
 | Color-only success/fail | Icon + text | Keep in any UI |
-| Gemini outage blocks Sunday | Non-blocking assist | Keep assist async/optional |
+| Gemini outage blocks Sunday | Retry once, then notify with text + failure note; speaker already ACK’d | Keep assist async/optional |
+| Team email before text ready | Late notify after text+scripture artifacts | Same rule in Form/Drive automation |
 | No SED checklist link | Out of scope here | Service calendar object + “slides ready” |
 
 ## Recommended future intake (no SED work in this PR)
