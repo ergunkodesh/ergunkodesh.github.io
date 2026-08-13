@@ -22,17 +22,58 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
     </style>
+    <!-- Local secrets/config (gitignored). Copy from config.example.js -->
+    <script src="config.js"></script>
 </head>
 <body class="bg-gray-100">
 
-    <div id="password-screen" class="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+    <div id="config-error" class="hidden min-h-screen flex items-center justify-center p-4 bg-gray-50">
+        <div class="w-full max-w-lg bg-white p-8 rounded-xl shadow-lg" role="alert">
+            <div class="flex items-start gap-3">
+                <span class="status-icon bg-amber-200 text-amber-950" aria-hidden="true">!</span>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">Portal not configured</h1>
+                    <p class="mt-2 text-gray-700">
+                        <code class="bg-gray-100 px-1 rounded">speaker/config.js</code> is missing or incomplete.
+                        Copy <code class="bg-gray-100 px-1 rounded">config.example.js</code> to
+                        <code class="bg-gray-100 px-1 rounded">config.js</code>, set
+                        <code class="bg-gray-100 px-1 rounded">googleScriptUrl</code> and
+                        <code class="bg-gray-100 px-1 rounded">scriptPassword</code>, then redeploy.
+                        See <code class="bg-gray-100 px-1 rounded">speaker/README.md</code>.
+                    </p>
+                    <p class="mt-4 text-gray-700">
+                        Need to send files now?
+                        Email <a id="config-fallback-link" class="font-medium text-blue-700 underline" href="mailto:media@anchorfalls.org">media@anchorfalls.org</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="password-screen" class="hidden min-h-screen flex items-center justify-center p-4 bg-gray-50">
         <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
             <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Submission Portal</h1>
             <p class="text-center text-gray-500 mb-6">Please enter the password to continue.</p>
             <form id="password-form">
-                <input type="password" id="password-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password">
-                <p id="password-error" class="text-red-500 text-sm mt-2 hidden">Incorrect password. Please try again.</p>
+                <label for="password-input" class="sr-only">Password</label>
+                <input type="password" id="password-input" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password" autocomplete="current-password">
+                <p id="password-error" class="hidden mt-2 text-sm text-red-800 flex items-center gap-2" role="alert">
+                    <span class="status-icon bg-red-200 text-red-900" aria-hidden="true">×</span>
+                    <span>Incorrect password. Please try again.</span>
+                </p>
                 <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mt-4 hover:bg-blue-700 transition-colors">Enter</button>
             </form>
         </div>
@@ -42,28 +83,28 @@
         <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
             <div class="text-center mb-10">
                 <h1 class="text-4xl font-bold text-gray-900">Anchor Falls Church</h1>
-                <h1 class="text-4xl font-bold text-gray-900">Submission Portal</h1>
-                <p class="mt-2 text-lg text-gray-600">Submits your presentation to Media, Video Streaming, and any other required teams.</p>
+                <h2 class="text-3xl font-bold text-gray-900 mt-1">Submission Portal</h2>
+                <p class="mt-2 text-lg text-gray-600">Submit your presentation to Media, livestream, and video teams in one place.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-                
+
                 <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
                     <h2 class="flex items-center text-xl font-semibold text-gray-800 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                         Resources
                     </h2>
                     <p class="text-gray-800 mb-4">Our official template and fonts are available for consistency.</p>
                     <ul class="space-y-2">
-                        <li><a href="https://drive.google.com/file/d/1_qJqzE2bP0TgShAT1q3y6C2SJHk4V5du/view?usp=sharing" class="font-medium text-blue-600 hover:underline">Download PowerPoint Template</a></li>
-                        <li><a href="https://fonts.google.com/specimen/Mulish" class="font-medium text-blue-600 hover:underline" target="_blank">Download 'Mulish' Font</a></li>
-                        <li><a href="https://fonts.google.com/specimen/Montserrat" class="font-medium text-blue-600 hover:underline" target="_blank">Download 'Montserrat' Font</a></li>
+                        <li><a href="https://drive.google.com/file/d/1_qJqzE2bP0TgShAT1q3y6C2SJHk4V5du/view?usp=sharing" class="font-medium text-blue-700 hover:underline">Download PowerPoint Template</a></li>
+                        <li><a href="https://fonts.google.com/specimen/Mulish" class="font-medium text-blue-700 hover:underline" target="_blank" rel="noopener noreferrer">Download Mulish Font</a></li>
+                        <li><a href="https://fonts.google.com/specimen/Montserrat" class="font-medium text-blue-700 hover:underline" target="_blank" rel="noopener noreferrer">Download Montserrat Font</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
                     <h2 class="flex items-center text-xl font-semibold text-gray-800 mb-4">
-                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                         Presentation Guidelines
                     </h2>
                     <div class="mt-4 text-gray-700 space-y-3">
@@ -85,7 +126,7 @@
                         <div class="space-y-6">
                             <div>
                                 <label for="speakerName" class="block text-sm font-medium text-gray-700">Speaker Name</label>
-                                <input type="text" id="speakerName" name="speakerName" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <input type="text" id="speakerName" name="speakerName" required autocomplete="name" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
                                 <label for="sermonTitle" class="block text-sm font-medium text-gray-700">Sermon Title</label>
@@ -97,14 +138,14 @@
                             </div>
                         </div>
                     </fieldset>
-                    
+
                     <fieldset>
                         <legend class="text-lg font-semibold text-gray-800 mb-4 border-l-4 border-gray-500 pl-3">File Attachments</legend>
                         <div class="space-y-6">
                             <div>
                                 <label for="presentationFile" class="block text-sm font-medium text-gray-700">Presentation File (Required)</label>
                                 <span class="text-xs text-gray-500">Accepted formats: .ppt, .pptx, .key</span>
-                                <input type="file" id="presentationFile" name="presentationFile" required accept=".ppt,.pptx,.key" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                                <input type="file" id="presentationFile" name="presentationFile" required accept=".ppt,.pptx,.key,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
                             </div>
                              <div>
                                 <label for="additionalFiles" class="block text-sm font-medium text-gray-700">Additional Files (Optional)</label>
@@ -112,6 +153,7 @@
                                 <input type="file" id="additionalFiles" name="additionalFiles" multiple class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100 cursor-pointer">
                                 <div id="additional-files-list" class="mt-2 text-sm text-gray-600 space-y-1"></div>
                             </div>
+                            <p id="upload-limit-hint" class="text-xs text-gray-500"></p>
                         </div>
                     </fieldset>
 
@@ -121,220 +163,316 @@
                             <div>
                                 <label for="senderEmail" class="block text-sm font-medium text-gray-700">Your Email (Optional)</label>
                                 <span class="text-xs text-gray-500">For confirmation or if the team has questions.</span>
-                                <input type="email" id="senderEmail" name="senderEmail" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <input type="email" id="senderEmail" name="senderEmail" autocomplete="email" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
                                 <label for="notes" class="block text-sm font-medium text-gray-700">Notes (Optional)</label>
                                 <span class="text-xs text-gray-500">Any special instructions for the production team?</span>
-                                <textarea id="notes" name="notes" rows="3" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 'Please start the video on slide 5 automatically.'"></textarea>
+                                <textarea id="notes" name="notes" rows="3" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Please start the video on slide 5 automatically."></textarea>
                             </div>
                         </div>
                     </fieldset>
 
                     <div class="pt-4">
-                        <button type="submit" id="submit-button" class="w-full flex justify-center items-center bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-400">
+                        <button type="submit" id="submit-button" class="w-full flex justify-center items-center bg-green-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-800 transition-colors disabled:bg-gray-400">
                             Submit Information
                         </button>
                     </div>
                 </form>
 
-                <div id="loading-spinner" class="hidden flex justify-center items-center mt-4">
-                    <div class="spinner"></div>
+                <div id="loading-spinner" class="hidden flex justify-center items-center mt-4" aria-live="polite">
+                    <div class="spinner" aria-hidden="true"></div>
                     <p id="loading-message" class="ml-4 text-gray-600">Submitting, please wait...</p>
                 </div>
-                <div id="status-message" class="mt-6 p-4 rounded-lg text-center font-medium hidden"></div>
+                <div id="status-message" class="mt-6 p-4 rounded-lg font-medium hidden" role="status" aria-live="polite"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        const pagePassword = "Connect2025";
-        const scriptPassword = "ExcellenceHonorsGod";
-        const googleScriptUrl = "https://script.google.com/macros/s/AKfycby1Op6LH1KTKQWYo9eYcA-PSKpIgGXHhDAErUgYbl98ev2GEbkdj50ZHHXl5Zv5UomC/exec";
-        // --------------------
+        (function () {
+            const defaults = {
+                googleScriptUrl: '',
+                scriptPassword: '',
+                pagePassword: '', // recommended default: off; unlisted URL is enough friction
+                maxTotalUploadBytes: 20 * 1024 * 1024,
+                fallbackEmail: 'media@anchorfalls.org'
+            };
+            const config = Object.assign({}, defaults, window.SPEAKER_PORTAL_CONFIG || {});
 
-        // --- Element Selectors ---
-        const passwordScreen = document.getElementById('password-screen');
-        const mainContent = document.getElementById('main-content');
-        const passwordForm = document.getElementById('password-form');
-        const passwordInput = document.getElementById('password-input');
-        const passwordError = document.getElementById('password-error');
-        const form = document.getElementById('submission-form');
-        const submitButton = document.getElementById('submit-button');
-        const statusMessage = document.getElementById('status-message');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const serviceDateInput = document.getElementById('serviceDate');
-        const additionalFilesInput = document.getElementById('additionalFiles');
-        const additionalFilesList = document.getElementById('additional-files-list');
-        const loadingMessage = document.getElementById('loading-message'); // New selector for loading message
+            const configError = document.getElementById('config-error');
+            const passwordScreen = document.getElementById('password-screen');
+            const mainContent = document.getElementById('main-content');
+            const passwordForm = document.getElementById('password-form');
+            const passwordInput = document.getElementById('password-input');
+            const passwordError = document.getElementById('password-error');
+            const form = document.getElementById('submission-form');
+            const submitButton = document.getElementById('submit-button');
+            const statusMessage = document.getElementById('status-message');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const serviceDateInput = document.getElementById('serviceDate');
+            const additionalFilesInput = document.getElementById('additionalFiles');
+            const additionalFilesList = document.getElementById('additional-files-list');
+            const loadingMessage = document.getElementById('loading-message');
+            const uploadLimitHint = document.getElementById('upload-limit-hint');
+            const configFallbackLink = document.getElementById('config-fallback-link');
 
-        // --- Password Protection ---
-        passwordForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (passwordInput.value === pagePassword) {
-                passwordScreen.classList.add('hidden');
-                mainContent.classList.remove('hidden');
-            } else {
-                passwordError.classList.remove('hidden');
-                passwordInput.classList.add('border-red-500');
+            const fallbackEmail = config.fallbackEmail || 'media@anchorfalls.org';
+            configFallbackLink.href = 'mailto:' + fallbackEmail;
+            configFallbackLink.textContent = fallbackEmail;
+
+            function formatBytes(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
             }
-        });
-        
-        // --- Date Logic ---
-        const getNextServiceDate = () => {
-            const now = new Date();
-            const dayOfWeek = now.getDay();
-            const hour = now.getHours();
-            let daysToAdd = (dayOfWeek === 0 && hour < 10) ? 0 : (7 - dayOfWeek) % 7;
-            if (dayOfWeek === 0 && hour >=10) daysToAdd = 7;
-            
-            const serviceDate = new Date(now);
-            serviceDate.setDate(now.getDate() + daysToAdd);
-            return serviceDate.toISOString().split('T')[0];
-        };
-        serviceDateInput.value = getNextServiceDate();
 
-        // --- Dynamic File List for Additional Files ---
-        additionalFilesInput.addEventListener('change', () => {
-            additionalFilesList.innerHTML = '';
-            if (additionalFilesInput.files.length > 0) {
-                const title = document.createElement('p');
-                title.className = 'font-medium text-gray-700';
-                title.textContent = 'Selected files:';
-                additionalFilesList.appendChild(title);
+            uploadLimitHint.textContent =
+                'Total upload size limit: ' + formatBytes(config.maxTotalUploadBytes) +
+                '. If submit fails, email ' + fallbackEmail + '.';
 
-                const list = document.createElement('ul');
-                list.className = 'list-disc list-inside';
-                for (const file of additionalFilesInput.files) {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = file.name;
-                    list.appendChild(listItem);
-                }
-                additionalFilesList.appendChild(list);
-            }
-        });
-
-        // --- Helper function to read file as Base64 ---
-        const readFileAsBase64 = (file) => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve({
-                    fileName: file.name,
-                    mimeType: file.type,
-                    fileData: reader.result.split(',')[1]
-                });
-                reader.onerror = (error) => reject(error);
-                reader.readAsDataURL(file);
-            });
-        };
-
-        // ### CHANGE 2: New logic for dynamic loading messages ###
-        let messageInterval;
-        const loadingMessages = [
-            "Uploading your files...",
-            "Brewing some coffee...",
-            "Converting the presentation...",
-            "Asking the AI for a little help...",
-            "Polishing the pixels...",
-            "Almost there, hang tight!",
-            "Finalizing the details...",
-            "Waking up the cloud hamsters...",
-            "Reticulating splines...",
-            "Giving the script a pep talk...",
-            "Herding the digital cats...",
-            "Making sure the 1s and 0s are in order...",
-            "Dusting off the server racks...",
-            "Rerouting power to the main processors...",
-            "Checking for rogue semicolons..."
-        ];
-
-        function startLoadingMessages() {
-            loadingMessage.textContent = loadingMessages[0];
-            let messageIndex = 1;
-            messageInterval = setInterval(() => {
-                loadingMessage.textContent = loadingMessages[messageIndex % loadingMessages.length];
-                messageIndex++;
-            }, 4000); // Change message every 4 seconds
-        }
-
-        function stopLoadingMessages() {
-            clearInterval(messageInterval);
-            loadingMessage.textContent = 'Submitting, please wait...'; // Reset to default
-        }
-
-        // --- Form Submission Logic ---
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const presentationFile = document.getElementById('presentationFile').files[0];
-            if (!presentationFile) {
-                statusMessage.textContent = "Please select a presentation file.";
-                statusMessage.className = 'mt-6 p-4 rounded-lg text-center font-medium bg-red-100 text-red-800';
+            function showStatus(kind, title, detailHtml) {
+                const styles = {
+                    success: {
+                        box: 'mt-6 p-4 rounded-lg font-medium bg-green-50 text-green-950 border border-green-300 flex items-start gap-3 text-left',
+                        iconBg: 'bg-green-200 text-green-950',
+                        icon: '✓',
+                        label: 'Success'
+                    },
+                    error: {
+                        box: 'mt-6 p-4 rounded-lg font-medium bg-red-50 text-red-950 border border-red-300 flex items-start gap-3 text-left',
+                        iconBg: 'bg-red-200 text-red-950',
+                        icon: '×',
+                        label: 'Failed'
+                    },
+                    warning: {
+                        box: 'mt-6 p-4 rounded-lg font-medium bg-amber-50 text-amber-950 border border-amber-300 flex items-start gap-3 text-left',
+                        iconBg: 'bg-amber-200 text-amber-950',
+                        icon: '!',
+                        label: 'Notice'
+                    }
+                };
+                const s = styles[kind] || styles.warning;
+                statusMessage.className = s.box;
+                statusMessage.innerHTML =
+                    '<span class="status-icon ' + s.iconBg + '" aria-hidden="true">' + s.icon + '</span>' +
+                    '<div><p class="font-semibold">' + s.label + ': ' + title + '</p>' +
+                    (detailHtml ? '<div class="mt-1 font-normal text-sm">' + detailHtml + '</div>' : '') +
+                    '</div>';
                 statusMessage.classList.remove('hidden');
+            }
+
+            function fallbackMailto(speakerName, sermonTitle, serviceDate) {
+                const subject = encodeURIComponent(
+                    'Speaker submission fallback — ' + (serviceDate || '') + ' — ' + (sermonTitle || '')
+                );
+                const body = encodeURIComponent(
+                    'The Speaker Portal submit failed. Please find the presentation attached (or linked).\n\n' +
+                    'Speaker: ' + (speakerName || '') + '\n' +
+                    'Sermon title: ' + (sermonTitle || '') + '\n' +
+                    'Service date: ' + (serviceDate || '') + '\n'
+                );
+                return 'mailto:' + fallbackEmail + '?subject=' + subject + '&body=' + body;
+            }
+
+            const configReady = !!(config.googleScriptUrl && config.scriptPassword);
+            if (!configReady) {
+                configError.classList.remove('hidden');
                 return;
             }
 
-            submitButton.disabled = true;
-            submitButton.textContent = 'Submitting...';
-            loadingSpinner.classList.remove('hidden');
-            statusMessage.classList.add('hidden');
-            startLoadingMessages(); // Start the dynamic messages
-
-            try {
-                const filePromises = [];
-                filePromises.push(readFileAsBase64(presentationFile));
-                for (const file of additionalFilesInput.files) {
-                    filePromises.push(readFileAsBase64(file));
-                }
-
-                const allFiles = await Promise.all(filePromises);
-                const mainFileData = allFiles.shift();
-                const additionalFilesData = allFiles;
-
-                const payload = {
-                    password: scriptPassword,
-                    speakerName: form.speakerName.value,
-                    sermonTitle: form.sermonTitle.value,
-                    serviceDate: form.serviceDate.value,
-                    senderEmail: form.senderEmail.value,
-                    notes: form.notes.value,
-                    ...mainFileData,
-                    additionalFiles: additionalFilesData
-                };
-                
-                const response = await fetch(googleScriptUrl, {
-                    method: 'POST',
-                    redirect: 'follow',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
+            if (config.pagePassword) {
+                passwordScreen.classList.remove('hidden');
+                passwordForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    if (passwordInput.value === config.pagePassword) {
+                        passwordScreen.classList.add('hidden');
+                        mainContent.classList.remove('hidden');
+                        passwordError.classList.add('hidden');
+                    } else {
+                        passwordError.classList.remove('hidden');
+                        passwordInput.classList.add('border-red-500');
+                    }
                 });
+            } else {
+                mainContent.classList.remove('hidden');
+            }
 
-                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-                
-                const result = await response.json();
+            const getNextServiceDate = () => {
+                const now = new Date();
+                const dayOfWeek = now.getDay();
+                const hour = now.getHours();
+                let daysToAdd = (dayOfWeek === 0 && hour < 10) ? 0 : (7 - dayOfWeek) % 7;
+                if (dayOfWeek === 0 && hour >= 10) daysToAdd = 7;
+                const serviceDate = new Date(now);
+                serviceDate.setDate(now.getDate() + daysToAdd);
+                return serviceDate.toISOString().split('T')[0];
+            };
+            serviceDateInput.value = getNextServiceDate();
 
-                if (result.status === 'success') {
-                    statusMessage.textContent = result.message;
-                    statusMessage.className = 'mt-6 p-4 rounded-lg text-center font-medium bg-green-100 text-green-800';
-                    form.reset();
-                    serviceDateInput.value = getNextServiceDate();
-                    additionalFilesList.innerHTML = '';
-                } else {
-                    throw new Error(result.message || 'An unknown server error occurred.');
+            additionalFilesInput.addEventListener('change', () => {
+                additionalFilesList.innerHTML = '';
+                if (additionalFilesInput.files.length > 0) {
+                    const title = document.createElement('p');
+                    title.className = 'font-medium text-gray-700';
+                    title.textContent = 'Selected files:';
+                    additionalFilesList.appendChild(title);
+
+                    const list = document.createElement('ul');
+                    list.className = 'list-disc list-inside';
+                    for (const file of additionalFilesInput.files) {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = file.name + ' (' + formatBytes(file.size) + ')';
+                        list.appendChild(listItem);
+                    }
+                    additionalFilesList.appendChild(list);
+                }
+            });
+
+            const readFileAsBase64 = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve({
+                        fileName: file.name,
+                        mimeType: file.type || 'application/octet-stream',
+                        fileData: reader.result.split(',')[1]
+                    });
+                    reader.onerror = (error) => reject(error);
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            function createSubmissionId() {
+                if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                    return window.crypto.randomUUID();
+                }
+                return 'sub_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+            }
+
+            let messageInterval;
+            const loadingMessages = [
+                'Uploading your files...',
+                'Saving to the media folder...',
+                'Almost there — finishing the upload...',
+                'Confirming your files are saved...'
+            ];
+
+            function startLoadingMessages() {
+                loadingMessage.textContent = loadingMessages[0];
+                let messageIndex = 1;
+                messageInterval = setInterval(() => {
+                    loadingMessage.textContent = loadingMessages[messageIndex % loadingMessages.length];
+                    messageIndex++;
+                }, 4000);
+            }
+
+            function stopLoadingMessages() {
+                clearInterval(messageInterval);
+                loadingMessage.textContent = 'Submitting, please wait...';
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const presentationFile = document.getElementById('presentationFile').files[0];
+                if (!presentationFile) {
+                    showStatus('error', 'Missing presentation file', 'Please select a presentation file (.ppt, .pptx, or .key).');
+                    return;
                 }
 
-            } catch (error) {
-                statusMessage.textContent = `Submission failed: ${error.message}`;
-                statusMessage.className = 'mt-6 p-4 rounded-lg text-center font-medium bg-red-100 text-red-800';
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Submit Information';
-                loadingSpinner.classList.add('hidden');
-                statusMessage.classList.remove('hidden');
-                stopLoadingMessages(); // Stop the dynamic messages
-            }
-        });
+                let totalBytes = presentationFile.size;
+                for (const file of additionalFilesInput.files) {
+                    totalBytes += file.size;
+                }
+                if (totalBytes > config.maxTotalUploadBytes) {
+                    showStatus(
+                        'error',
+                        'Files too large',
+                        'Total size is ' + formatBytes(totalBytes) +
+                        ', but the limit is ' + formatBytes(config.maxTotalUploadBytes) +
+                        '. Please compress the deck or email it to <a class="underline font-semibold" href="' +
+                        fallbackMailto(form.speakerName.value, form.sermonTitle.value, form.serviceDate.value) +
+                        '">' + fallbackEmail + '</a>.'
+                    );
+                    return;
+                }
+
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                loadingSpinner.classList.remove('hidden');
+                statusMessage.classList.add('hidden');
+                startLoadingMessages();
+
+                const speakerName = form.speakerName.value;
+                const sermonTitle = form.sermonTitle.value;
+                const serviceDate = form.serviceDate.value;
+
+                try {
+                    const filePromises = [readFileAsBase64(presentationFile)];
+                    for (const file of additionalFilesInput.files) {
+                        filePromises.push(readFileAsBase64(file));
+                    }
+
+                    const allFiles = await Promise.all(filePromises);
+                    const mainFileData = allFiles.shift();
+                    const additionalFilesData = allFiles;
+
+                    const payload = {
+                        password: config.scriptPassword,
+                        submissionId: createSubmissionId(),
+                        speakerName: speakerName,
+                        sermonTitle: sermonTitle,
+                        serviceDate: serviceDate,
+                        senderEmail: form.senderEmail.value,
+                        notes: form.notes.value,
+                        ...mainFileData,
+                        additionalFiles: additionalFilesData
+                    };
+
+                    const response = await fetch(config.googleScriptUrl, {
+                        method: 'POST',
+                        redirect: 'follow',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok (' + response.status + ').');
+                    }
+
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        showStatus(
+                            'success',
+                            'Upload complete',
+                            (result.message || 'You\'re done — your presentation was saved.') +
+                            (result.duplicate ? ' (This matched a previous submission and was not duplicated.)' : '') +
+                            '<p class="mt-2 text-xs text-green-900/80">Media is notified after slide text processing finishes — not on the raw upload alone.</p>'
+                        );
+                        form.reset();
+                        serviceDateInput.value = getNextServiceDate();
+                        additionalFilesList.innerHTML = '';
+                    } else {
+                        throw new Error(result.message || 'An unknown server error occurred.');
+                    }
+                } catch (error) {
+                    const mailto = fallbackMailto(speakerName, sermonTitle, serviceDate);
+                    showStatus(
+                        'error',
+                        'Submission failed',
+                        (error && error.message ? error.message : 'Unknown error') +
+                        '. Please email your files to <a class="underline font-semibold" href="' +
+                        mailto + '">' + fallbackEmail + '</a> so Media still receives them.'
+                    );
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit Information';
+                    loadingSpinner.classList.add('hidden');
+                    stopLoadingMessages();
+                }
+            });
+        })();
     </script>
 </body>
 </html>
