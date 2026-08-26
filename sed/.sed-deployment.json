@@ -1,0 +1,11 @@
+{
+  "target": "production",
+  "projectId": "anchor-falls-sed",
+  "appId": "1:585828179269:web:66a2dc8e500ae07533f22c",
+  "authDomain": "anchor-falls-sed.firebaseapp.com",
+  "publicFeedbackEndpoint": "https://us-central1-anchor-falls-sed.cloudfunctions.net/submitPublicFeedback",
+  "roomFeedbackEndpoint": "https://us-central1-anchor-falls-sed.cloudfunctions.net/submitPersistentRoomFeedback",
+  "appCheckSiteKeySha256": null,
+  "appCheckConfigured": true,
+  "compiledAppCheckSiteKeySha256": "6dfee55b55d4a9e81a40ecf95d23815126198344a925a6dd69f7840eb99f83f8"
+}
