@@ -14,7 +14,50 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="SED" />
     <title>SED Dashboard — Anchor Falls</title>
-    <!-- GitHub Pages SPA redirect: restore path encoded by 404.html -->
+    <!-- WP18 no-flash theme (This device's Appearance setting, WP7):
+         applies the SAME resolution `src/lib/device-theme.ts`'s
+         `resolveDeviceTheme(stored, orgDefault)` does, before first paint —
+         this can't import that module (it must run before any script
+         bundle), so the rule and both storage keys
+         (`DEVICE_THEME_STORAGE_KEY`, `ORG_THEME_CACHE_KEY`) are duplicated
+         here; `index.no-flash-theme.test.mjs` asserts all of this never
+         drifts from device-theme.ts.
+           1. This device's own saved choice ('sed-device-theme') wins, exactly
+              like resolveDeviceTheme.
+           2. Otherwise, the org default ('config/appSettings', via
+              `settings.theme`) would decide — but that needs a Firestore read
+              and genuinely isn't knowable synchronously pre-paint on a FIRST
+              visit. `useDeviceTheme` mirrors the last org default it actually
+              loaded into 'sed-org-theme-cache' (review fix), so from a
+              device's SECOND visit onward this script can use that
+              best-effort snapshot instead of always assuming light.
+           3. Otherwise (truly first visit, nothing cached anywhere): default
+              (light), same as resolveDeviceTheme(null, undefined).
+         No CSP exists in this app (checked firebase.json /
+         firebase.staging.json / public headers), so an inline script is
+         safe here. -->
+    <script>
+      (function () {
+        try {
+          var stored = window.localStorage.getItem('sed-device-theme');
+          var theme;
+          if (stored === 'dark' || stored === 'default') {
+            theme = stored;
+          } else {
+            var orgDefault = window.localStorage.getItem('sed-org-theme-cache');
+            theme = orgDefault === 'dark' ? 'dark' : 'default';
+          }
+          if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (e) {
+          // Private browsing / blocked storage: fall through to light, same
+          // as a first-ever visit on this device.
+        }
+      })();
+    </script>
+    <!-- GitHub Pages SPA redirect: restore the path encoded by the root 404.html in the
+         public Pages repository (see docs/source-and-web-deployment.md, Deep links). -->
     <script>
       (function(l) {
         if (l.search[1] === 'p') {
@@ -25,8 +68,8 @@
         }
       }(window.location));
     </script>
-    <script type="module" crossorigin src="/sed/assets/main-BW7vHros.js"></script>
-    <link rel="stylesheet" crossorigin href="/sed/assets/main-B9LT3TfC.css">
+    <script type="module" crossorigin src="/sed/assets/main-Bnjf3uZI.js"></script>
+    <link rel="stylesheet" crossorigin href="/sed/assets/main-CTjv6fjM.css">
   </head>
   <body>
     <div id="root"></div>
