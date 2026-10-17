@@ -17,13 +17,9 @@ The site is static on GitHub Pages, so the form posts to [Web3Forms](https://web
 
 The Web3Forms access key lives in `index.html` (`WEB3FORMS_ACCESS_KEY`). Web3Forms documents this key as safe to publish: it can only deliver to the inbox it was created for. No server secret is involved.
 
-### Set up the key
+### The key
 
-1. Go to https://web3forms.com, enter `jasonpaschall@anchorfalls.org`, and create an access key. It arrives by email.
-2. In `index.html`, replace `YOUR_WEB3FORMS_ACCESS_KEY` with the key.
-3. Commit and push to `main`. GitHub Pages publishes within a minute or two.
-
-Until the key is set, submitting shows the "didn't go through" message with the fallback email address.
+The access key was created on 2026-10-17 in the Web3Forms account for jasonpaschall@anchorfalls.org (form name "Alan Ross prayer video sign-up"). To replace it, create a new form at https://app.web3forms.com, paste the new key into `WEB3FORMS_ACCESS_KEY` in `index.html`, and push to `main`.
 
 ### Spam
 
