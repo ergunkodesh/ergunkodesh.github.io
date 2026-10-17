@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Unlisted page: reached by QR code only. Keep it out of navigation, sitemaps, and robots.txt. -->
+    <meta name="robots" content="noindex, nofollow">
+    <title>Prayer with Prophet Alan Ross</title>
+    <meta name="theme-color" content="#2C3E50">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Mulish:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #2C3E50;
+            --navy-hover: #24303F;
+            --orange: #C7711A;
+            --ink: #2B2A29;
+            --secondary: #57687A;
+            --section: #EEF2F6;
+            --border: #919AA4;
+            --focus: #6AB5FF;
+            --error: #A3261C;
+            --white: #FFFFFF;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--section);
+            color: var(--ink);
+            font-family: 'Mulish', system-ui, -apple-system, sans-serif;
+            font-size: 1rem;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2 {
+            font-family: 'Montserrat', system-ui, sans-serif;
+            color: var(--navy);
+            text-wrap: balance;
+            margin: 0;
+        }
+
+        p { text-wrap: pretty; margin: 0; }
+
+        a {
+            color: var(--navy);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            transition: color 200ms ease-out;
+        }
+        a:hover { color: var(--orange); }
+
+        :focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        .site-header {
+            padding: 20px 16px 0;
+        }
+        .brand {
+            max-width: 560px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand img {
+            width: 28px;
+            height: auto;
+            display: block;
+        }
+        .brand span {
+            font-family: 'Montserrat', system-ui, sans-serif;
+            font-weight: 700;
+            font-size: 0.9375rem;
+            color: var(--navy);
+            letter-spacing: 0.01em;
+        }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 20px 16px 32px;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(44, 62, 80, 0.12);
+            padding: 28px 20px;
+        }
+
+        .eyebrow {
+            font-weight: 700;
+            font-size: 0.8125rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+        .eyebrow::before {
+            content: "";
+            display: block;
+            width: 32px;
+            height: 3px;
+            background: var(--orange);
+            border-radius: 2px;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: 1.75rem;
+            line-height: 1.2;
+            margin-bottom: 14px;
+        }
+
+        .intro {
+            font-size: 1.0625rem;
+            margin-bottom: 28px;
+        }
+
+        .field + .field { margin-top: 22px; }
+
+        label {
+            display: block;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+        .required-mark {
+            color: var(--secondary);
+            font-weight: 400;
+            font-size: 0.875rem;
+        }
+
+        .helper {
+            font-size: 0.9375rem;
+            color: var(--secondary);
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            display: block;
+            width: 100%;
+            min-height: 48px;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 1rem; /* 16px keeps iOS from zooming */
+            color: var(--ink);
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            transition: border-color 200ms ease-out;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input[type="text"]:hover,
+        input[type="email"]:hover { border-color: var(--secondary); }
+        input[type="text"]:focus-visible,
+        input[type="email"]:focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 0;
+            border-color: var(--navy);
+        }
+        input[aria-invalid="true"] {
+            border: 2px solid var(--error);
+            padding: 9px 11px;
+        }
+
+        .error {
+            color: var(--error);
+            font-weight: 700;
+            font-size: 0.9375rem;
+            margin-top: 6px;
+        }
+        .error:empty { display: none; }
+
+        /* Honeypot: hidden from people and screen readers, still in the DOM for bots. */
+        .hp {
+            position: absolute;
+            left: -10000px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .actions { margin-top: 28px; }
+
+        button {
+            display: block;
+            width: 100%;
+            min-height: 48px;
+            padding: 12px 20px;
+            font-family: 'Montserrat', system-ui, sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--white);
+            background: var(--navy);
+            border: 0;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 200ms ease-out;
+        }
+        button:hover { background: var(--navy-hover); }
+        button:focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 2px;
+        }
+        button[aria-disabled="true"] {
+            cursor: progress;
+            background: var(--navy-hover);
+        }
+
+        .send-error {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border: 1px solid var(--error);
+            border-left-width: 4px;
+            border-radius: 3px;
+            background: #FBF1F0;
+        }
+        .send-error p + p { margin-top: 6px; }
+        .send-error strong { color: var(--error); }
+
+        .note {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--section);
+            font-size: 0.9375rem;
+            color: var(--secondary);
+        }
+
+        .thanks h2 {
+            font-weight: 700;
+            font-size: 1.375rem;
+            line-height: 1.3;
+        }
+        .thanks h2:focus { outline: none; }
+        .thanks h2:focus-visible {
+            outline: 2px solid var(--focus);
+            outline-offset: 4px;
+        }
+
+        .site-footer {
+            padding: 0 16px 28px;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--secondary);
+        }
+
+        [hidden] { display: none !important; }
+
+        @media (min-width: 640px) {
+            .site-header { padding-top: 40px; }
+            main { padding-top: 24px; padding-bottom: 48px; }
+            .card { padding: 40px; }
+            h1 { font-size: 2.125rem; }
+            .actions button { width: auto; min-width: 200px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="brand">
+            <img src="logo-anchor-falls-icon-navy.svg" alt="" width="28" height="36">
+            <span>Anchor Falls Church</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="card">
+            <p class="eyebrow">Personal prayer videos</p>
+            <h1>Prayer with Prophet Alan Ross</h1>
+            <p class="intro">We record the prayer time so you can watch it again. Each person, couple, family, or group gets their own clip. Leave your names and email below and we'll send you a private YouTube link once it's ready.</p>
+
+            <form id="signup-form" novalidate>
+                <div class="field">
+                    <label for="names">Name(s) <span class="required-mark">(required)</span></label>
+                    <p class="helper" id="names-help">Individual, couple, family, or group</p>
+                    <input type="text" id="names" name="names" autocomplete="name" autocapitalize="words" required aria-required="true" aria-describedby="names-help names-error">
+                    <p class="error" id="names-error" aria-live="polite"></p>
+                </div>
+
+                <div class="field">
+                    <label for="emails">Email address(es) <span class="required-mark">(required)</span></label>
+                    <p class="helper" id="emails-help">We'll send your private link here.</p>
+                    <input type="email" id="emails" name="emails" multiple autocomplete="email" autocapitalize="off" spellcheck="false" required aria-required="true" aria-describedby="emails-help emails-error">
+                    <p class="error" id="emails-error" aria-live="polite"></p>
+                </div>
+
+                <div class="hp" aria-hidden="true">
+                    <label for="website">Leave this field empty</label>
+                    <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+                </div>
+
+                <div class="actions">
+                    <button type="submit" id="submit-button">Send my info</button>
+                </div>
+
+                <div id="send-error" class="send-error" role="alert" hidden></div>
+            </form>
+
+            <div id="thanks" class="thanks" hidden>
+                <h2 tabindex="-1">Thank you. We'll email your link once your video is ready.</h2>
+            </div>
+
+            <p class="note">Unlisted videos don't show up in YouTube search, and we send each link only to the addresses you give us. You're free to pass yours along to family and friends.</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>Anchor Falls Church · Menomonee Falls, Wisconsin</p>
+    </footer>
+
+    <script>
+        (function () {
+            // Web3Forms access key. Web3Forms documents this key as safe to
+            // publish in client-side code: it can only deliver submissions to
+            // the inbox it was created for (jasonpaschall@anchorfalls.org).
+            // See prayer-video/README.md for setup.
+            var WEB3FORMS_ACCESS_KEY = 'b7f8107c-62ea-40b8-ab81-13390cae29c7';
+            var ENDPOINT = 'https://api.web3forms.com/submit';
+            var SUBJECT = 'Alan Ross prayer video sign-up';
+            var FALLBACK_EMAIL = 'jasonpaschall@anchorfalls.org';
+            var TIMEOUT_MS = 15000;
+
+            var form = document.getElementById('signup-form');
+            var namesInput = document.getElementById('names');
+            var emailsInput = document.getElementById('emails');
+            var namesError = document.getElementById('names-error');
+            var emailsError = document.getElementById('emails-error');
+            var honeypot = document.getElementById('website');
+            var button = document.getElementById('submit-button');
+            var sendError = document.getElementById('send-error');
+            var thanks = document.getElementById('thanks');
+            var sending = false;
+
+            // Practical check: something@something.tld, no spaces.
+            var EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/;
+
+            function splitEmails(value) {
+                var seen = {};
+                return value.split(/[,;\s]+/)
+                    .map(function (s) { return s.trim(); })
+                    .filter(function (s) {
+                        if (!s) return false;
+                        var key = s.toLowerCase();
+                        if (seen[key]) return false;
+                        seen[key] = true;
+                        return true;
+                    });
+            }
+
+            function setError(input, errorEl, message) {
+                errorEl.textContent = message;
+                if (message) {
+                    input.setAttribute('aria-invalid', 'true');
+                } else {
+                    input.removeAttribute('aria-invalid');
+                }
+            }
+
+            function validateNames() {
+                var ok = namesInput.value.trim().length > 0;
+                setError(namesInput, namesError, ok ? '' : 'Please enter a name.');
+                return ok;
+            }
+
+            function validateEmails() {
+                var list = splitEmails(emailsInput.value);
+                if (list.length === 0) {
+                    setError(emailsInput, emailsError, 'Please enter at least one email address.');
+                    return null;
+                }
+                var bad = list.filter(function (e) { return !EMAIL_RE.test(e); });
+                if (bad.length === 1) {
+                    setError(emailsInput, emailsError, 'Please check this address: ' + bad[0]);
+                    return null;
+                }
+                if (bad.length > 1) {
+                    setError(emailsInput, emailsError, 'Please check these addresses: ' + bad.join(', '));
+                    return null;
+                }
+                setError(emailsInput, emailsError, '');
+                return list;
+            }
+
+            // Re-check a field once the person has fixed it, so stale errors clear.
+            namesInput.addEventListener('input', function () {
+                if (namesInput.getAttribute('aria-invalid') === 'true') validateNames();
+            });
+            emailsInput.addEventListener('blur', function () {
+                if (emailsInput.getAttribute('aria-invalid') === 'true') validateEmails();
+            });
+
+            function showSendError() {
+                sendError.innerHTML = '';
+                var p1 = document.createElement('p');
+                var strong = document.createElement('strong');
+                strong.textContent = "Sorry, your info didn't go through.";
+                p1.appendChild(strong);
+                var p2 = document.createElement('p');
+                p2.appendChild(document.createTextNode('Please try again, or email your names and address to '));
+                var link = document.createElement('a');
+                link.href = 'mailto:' + FALLBACK_EMAIL + '?subject=' + encodeURIComponent(SUBJECT);
+                // Let the address wrap at the @ on narrow phones instead of mid-word.
+                var at = FALLBACK_EMAIL.indexOf('@');
+                link.appendChild(document.createTextNode(FALLBACK_EMAIL.slice(0, at)));
+                link.appendChild(document.createElement('wbr'));
+                link.appendChild(document.createTextNode(FALLBACK_EMAIL.slice(at)));
+                p2.appendChild(link);
+                p2.appendChild(document.createTextNode('.'));
+                sendError.appendChild(p1);
+                sendError.appendChild(p2);
+                sendError.hidden = false;
+            }
+
+            function setSending(on) {
+                sending = on;
+                button.textContent = on ? 'Sending...' : 'Send my info';
+                if (on) {
+                    button.setAttribute('aria-disabled', 'true');
+                } else {
+                    button.removeAttribute('aria-disabled');
+                }
+            }
+
+            function showThanks() {
+                form.hidden = true;
+                thanks.hidden = false;
+                thanks.querySelector('h2').focus();
+            }
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                if (sending) return;
+                sendError.hidden = true;
+
+                var namesOk = validateNames();
+                var emails = validateEmails();
+                if (!namesOk) { namesInput.focus(); return; }
+                if (!emails) { emailsInput.focus(); return; }
+
+                // Bots fill every field. Pretend it worked and send nothing.
+                if (honeypot.value) { showThanks(); return; }
+
+                if (!WEB3FORMS_ACCESS_KEY || WEB3FORMS_ACCESS_KEY.indexOf('YOUR_') === 0) {
+                    showSendError();
+                    return;
+                }
+
+                var names = namesInput.value.trim();
+                var payload = {
+                    access_key: WEB3FORMS_ACCESS_KEY,
+                    subject: SUBJECT,
+                    from_name: 'ErgunKodesh.org prayer video sign-up',
+                    replyto: emails[0],
+                    'Name(s)': names,
+                    'Email address(es)': emails.join(', '),
+                    botcheck: ''
+                };
+
+                var controller = 'AbortController' in window ? new AbortController() : null;
+                var timer = controller ? setTimeout(function () { controller.abort(); }, TIMEOUT_MS) : null;
+
+                setSending(true);
+                fetch(ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller ? controller.signal : undefined
+                })
+                    .then(function (response) {
+                        return response.json().catch(function () { return {}; }).then(function (data) {
+                            if (!response.ok || !data.success) throw new Error(data.message || 'Send failed');
+                        });
+                    })
+                    .then(function () {
+                        showThanks();
+                    })
+                    .catch(function () {
+                        setSending(false);
+                        showSendError();
+                    })
+                    .then(function () {
+                        if (timer) clearTimeout(timer);
+                    });
+            });
+        })();
+    </script>
+</body>
+</html>
